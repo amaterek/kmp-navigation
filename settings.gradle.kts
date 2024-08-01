@@ -22,3 +22,5 @@ include(":navigation")
 include(":navigation:jetpack")
 include(":navigation:voyager")
 include(":sample")
+
+include(":log")

@@ -41,7 +41,7 @@ kotlin {
             implementation(compose.runtime)
             implementation(compose.ui)
 
-            implementation(libs.amaterek.log)
+            implementation(projects.log)
         }
 
         commonTest.dependencies {
