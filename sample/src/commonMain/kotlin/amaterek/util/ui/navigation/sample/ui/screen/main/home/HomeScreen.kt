@@ -4,8 +4,8 @@ import amaterek.util.log.Log
 import amaterek.util.ui.navigation.LocalDestination
 import amaterek.util.ui.navigation.LocalNavigator
 import amaterek.util.ui.navigation.backhandler.BackHandler
-import amaterek.util.ui.navigation.destination.RedirectToParentStrategy
-import amaterek.util.ui.navigation.destination.toRedirectToParent
+import amaterek.util.ui.navigation.destination.redirectToParent
+import amaterek.util.ui.navigation.destination.redirectToParentIfNotInGraph
 import amaterek.util.ui.navigation.navigateBack
 import amaterek.util.ui.navigation.navigateBackWithResult
 import amaterek.util.ui.navigation.resultFlow
@@ -91,7 +91,7 @@ internal fun HomeScreen() {
             onClick = {
                 navigator.navigateTo(
                     AppLinkDestination("https://www.wikipedia.org")
-                        .toRedirectToParent(RedirectToParentStrategy.IfNotInCurrentGraph)
+                        .redirectToParentIfNotInGraph()
                 )
             },
         ) {
@@ -114,7 +114,7 @@ internal fun HomeScreen() {
 
         Button(
             modifier = Modifier.fillMaxWidth(),
-            onClick = { navigator.navigateTo(RootWithArgumentAndForResultDestination(text = "Test text").toRedirectToParent()) },
+            onClick = { navigator.navigateTo(RootWithArgumentAndForResultDestination(text = "Test text").redirectToParent()) },
         ) {
             Text("With argument and for result screen: $withArgumentAndForResultDestinationResult\nto root navigator", textAlign = TextAlign.Center)
         }

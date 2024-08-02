@@ -37,10 +37,18 @@ fun ScreenDestination.popUpTo(
 
 @OptIn(InternalNavigation::class)
 @Stable
-fun Destination.toRedirectToParent(strategy: RedirectToParentStrategy = RedirectToParentStrategy.Times(1)): Destination =
+fun Destination.redirectToParentIfNotInGraph(): Destination =
     ControlDestination.RedirectToParent(
         destination = this,
-        strategy = strategy,
+        strategy = RedirectToParentStrategy.IfNotInCurrentGraph,
+    )
+
+@OptIn(InternalNavigation::class)
+@Stable
+fun Destination.redirectToParent(deep: Int = 1): Destination =
+    ControlDestination.RedirectToParent(
+        destination = this,
+        strategy = RedirectToParentStrategy.Deep(deep),
     )
 
 internal fun invalidDestinationForResultError(destination: Destination): Nothing =

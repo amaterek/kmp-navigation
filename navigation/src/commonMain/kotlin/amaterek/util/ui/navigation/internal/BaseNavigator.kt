@@ -93,13 +93,13 @@ abstract class BaseNavigator(
                         navigateTo(destination.destination)
                     }
                 }
-                is RedirectToParentStrategy.Times -> {
+                is RedirectToParentStrategy.Deep -> {
                     val times = destination.strategy.value
                     if (times > 1) {
                         it.navigateTo(
                             ControlDestination.RedirectToParent(
                                 destination = destination,
-                                strategy = RedirectToParentStrategy.Times(times - 1),
+                                strategy = RedirectToParentStrategy.Deep(times - 1),
                             ),
                         )
                     } else {
