@@ -28,8 +28,8 @@ class JetpackNavigator(
     internal val startDestination: ScreenDestination,
     internal val navHostController: NavHostController,
     internal val graph: Set<GraphDestination>,
-    parent: Navigator?,
     private val coroutineScope: CoroutineScope,
+    parent: Navigator?,
 ) : BaseNavigator(graph, parent) {
 
     private val screenDestinationsMap = mutableMapOf<String, ScreenDestination>()
