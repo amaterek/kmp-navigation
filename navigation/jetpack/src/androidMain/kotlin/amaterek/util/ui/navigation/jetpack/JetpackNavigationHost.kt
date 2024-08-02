@@ -60,7 +60,7 @@ fun rememberJetpackNavigator(
 ): JetpackNavigator {
     val navController = rememberNavController()
     val coroutineScope = rememberCoroutineScope()
-    return remember { JetpackNavigator(startDestination, navController, graph, parent, coroutineScope) }
+    return remember { JetpackNavigator(startDestination, navController, graph, coroutineScope, parent) }
 }
 
 @Stable
