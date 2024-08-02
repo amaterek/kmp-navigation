@@ -70,9 +70,10 @@ sealed interface ControlDestination : Destination {
     ) : ControlDestination
 }
 
+@InternalNavigation
 sealed interface RedirectToParentStrategy {
 
     data object IfNotInCurrentGraph : RedirectToParentStrategy
 
-    data class Times(val value: Int) : RedirectToParentStrategy
+    data class Deep(val value: Int) : RedirectToParentStrategy
 }
