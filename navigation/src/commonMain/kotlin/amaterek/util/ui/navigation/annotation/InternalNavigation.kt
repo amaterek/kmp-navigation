@@ -1,5 +1,7 @@
 package amaterek.util.ui.navigation.annotation
 
+import kotlin.annotation.AnnotationRetention.BINARY
+
 @Target(
     allowedTargets = [
         AnnotationTarget.CLASS,
@@ -13,4 +15,5 @@ package amaterek.util.ui.navigation.annotation
     level = RequiresOptIn.Level.ERROR,
     message = "This API is Navigation Internal.",
 )
+@Retention(BINARY)
 annotation class InternalNavigation
