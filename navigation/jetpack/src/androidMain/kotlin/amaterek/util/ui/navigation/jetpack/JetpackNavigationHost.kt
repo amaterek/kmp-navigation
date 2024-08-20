@@ -129,7 +129,7 @@ private inline fun DestinationContent(
 
 @Stable
 private inline fun KClass<out ScreenDestination>.destination(navBackStackEntry: NavBackStackEntry): ScreenDestination =
-    objectInstance ?: (navBackStackEntry.arguments!!.getString(ArgumentsName)!!.deserializeDestination())
+    objectInstance ?: navBackStackEntry.arguments!!.getString(ArgumentsName)!!.deserializeDestination()
 
 @Stable
 private fun KClass<out DialogDestination>.getDialogProperties(): DialogProperties {
