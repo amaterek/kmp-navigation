@@ -44,7 +44,7 @@ class BaseNavigatorTest {
 
     // Back
     @Test
-    fun `WHEN navigates to PreviousDestination and can navigate back THEN does navigate back`() {
+    fun WHEN_navigates_to_PreviousDestination_and_can_navigate_back_THEN_does_navigate_back() {
         every { subject.backStack.size } returns 2
         every { subject.doNavigateBack() } returns Unit
 
@@ -54,7 +54,7 @@ class BaseNavigatorTest {
     }
 
     @Test
-    fun `WHEN navigates to PreviousDestination and can not navigate back THEN redirects it to parent`() {
+    fun WHEN_navigates_to_PreviousDestination_and_can_not_navigate_back_THEN_redirects_it_to_parent() {
         every { subject.backStack.size } returns 1
         every { parent.navigateTo(PreviousDestination) } returns Unit
 
@@ -64,7 +64,7 @@ class BaseNavigatorTest {
     }
 
     @Test
-    fun `WHEN navigates to PreviousDestination and can not navigate back and there is no parent THEN throw an error`() {
+    fun WHEN_navigates_to_PreviousDestination_and_can_not_navigate_back_and_there_is_no_parent_THEN_throw_an_error() {
         every { subject.backStack.size } returns 1
 
         assertFailsWith<IllegalStateException> {

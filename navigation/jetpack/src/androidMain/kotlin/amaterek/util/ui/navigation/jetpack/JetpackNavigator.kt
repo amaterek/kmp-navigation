@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.yield
 
 @SuppressLint("RestrictedApi")
-@OptIn(InternalNavigation::class)
+@InternalNavigation
 class JetpackNavigator(
     internal val startDestination: ScreenDestination,
     internal val navHostController: NavHostController,

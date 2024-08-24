@@ -4,7 +4,6 @@ import amaterek.util.ui.navigation.Navigator
 import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.jetpack.JetpackNavigationHost
-import amaterek.util.ui.navigation.jetpack.JetpackNavigator
 import amaterek.util.ui.navigation.jetpack.rememberJetpackNavigator
 import amaterek.util.ui.navigation.sample.ComposeApp
 import android.annotation.SuppressLint
@@ -69,9 +68,7 @@ internal class GetJetpackNavigationHost : NavigatorProvider {
     override fun invoke(
         navigator: Navigator,
     ) {
-        JetpackNavigationHost(
-            navigator = navigator as JetpackNavigator,
-        )
+        JetpackNavigationHost(navigator)
     }
 
     @Composable

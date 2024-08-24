@@ -1,10 +1,12 @@
 @file:Suppress("NOTHING_TO_INLINE")
+@file:OptIn(InternalNavigation::class)
 
 package amaterek.util.ui.navigation.jetpack
 
 import amaterek.util.ui.navigation.LocalDestination
 import amaterek.util.ui.navigation.LocalNavigator
 import amaterek.util.ui.navigation.Navigator
+import amaterek.util.ui.navigation.annotation.InternalNavigation
 import amaterek.util.ui.navigation.destination.DialogDestination
 import amaterek.util.ui.navigation.destination.DialogPropertiesProvider
 import amaterek.util.ui.navigation.destination.GraphDestination
@@ -33,13 +35,14 @@ fun JetpackNavigationHost(
     graph: Set<GraphDestination>,
     parent: Navigator? = null,
 ) = JetpackNavigationHost(
-    navigator = rememberJetpackNavigator(startDestination, graph, parent),
+    navigator = rememberJetpackNavigator(startDestination, graph, parent) as JetpackNavigator,
 )
 
 @Composable
 fun JetpackNavigationHost(
-    navigator: JetpackNavigator,
+    navigator: Navigator,
 ) {
+    navigator as JetpackNavigator
     CompositionLocalProvider(LocalNavigator provides navigator) {
         NavHost(
             navController = navigator.navHostController,
@@ -57,7 +60,7 @@ fun rememberJetpackNavigator(
     startDestination: ScreenDestination,
     graph: Set<GraphDestination>,
     parent: Navigator?,
-): JetpackNavigator {
+): Navigator {
     val navController = rememberNavController()
     val coroutineScope = rememberCoroutineScope()
     return remember { JetpackNavigator(startDestination, navController, graph, coroutineScope, parent) }

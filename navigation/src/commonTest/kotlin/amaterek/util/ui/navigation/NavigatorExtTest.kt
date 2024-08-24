@@ -27,7 +27,7 @@ class NavigatorExtTest {
 
     // Back
     @Test
-    fun `WHEN canNavigateBack is called and backstack entry size is grater then 1 THEN navigates to PreviousDestination`() {
+    fun WHEN_canNavigateBack_is_called_and_backstack_entry_size_is_grater_then_1_THEN_navigates_to_PreviousDestination() {
         (2..10).onEach {
             every { navigator.backStack.size } returns it
 
@@ -36,7 +36,7 @@ class NavigatorExtTest {
     }
 
     @Test
-    fun `WHEN canNavigateBack is called and backstack entry size is lower then 2 THEN navigates to PreviousDestination`() {
+    fun WHEN_canNavigateBack_is_called_and_backstack_entry_size_is_lower_then_2_THEN_navigates_to_PreviousDestination() {
         (-10..1).onEach {
             every { navigator.backStack.size } returns it
 
@@ -45,7 +45,7 @@ class NavigatorExtTest {
     }
 
     @Test
-    fun `WHEN navigateBack is called THEN navigates to PreviousDestination`() {
+    fun WHEN_navigateBack_is_called_THEN_navigates_to_PreviousDestination() {
         test(
             on = { navigateBack() },
             expect = PreviousDestination
@@ -53,7 +53,7 @@ class NavigatorExtTest {
     }
 
     @Test
-    fun `WHEN navigateBackWithResult is called THEN navigates to WithResult control destination`() {
+    fun WHEN_navigateBackWithResult_is_called_THEN_navigates_to_WithResult_control_destination() {
         val result = mockk<Any>()
         test(
             on = { navigateBackWithResult(result) },
@@ -63,7 +63,7 @@ class NavigatorExtTest {
 
     // PopUpTo
     @Test
-    fun `WHEN popUpTo is called with GraphDestination THEN navigates to PopUpToDestination`() {
+    fun WHEN_popUpTo_is_called_with_GraphDestination_THEN_navigates_to_PopUpToDestination() {
         val destination = mockk<GraphDestination>()
         val inclusive = Random.nextBoolean()
         test(
@@ -73,7 +73,7 @@ class NavigatorExtTest {
     }
 
     @Test
-    fun `WHEN popUpTo is called with ScreenDestination THEN navigates to PopUpToDestination`() {
+    fun WHEN_popUpTo_is_called_with_ScreenDestination_THEN_navigates_to_PopUpToDestination() {
         val destination = mockk<ScreenDestination>()
         val inclusive = Random.nextBoolean()
         test(
@@ -83,7 +83,7 @@ class NavigatorExtTest {
     }
 
     @Test
-    fun `WHEN popUpToWithResult is called with GraphDestination THEN navigates to PopUpToDestination`() {
+    fun WHEN_popUpToWithResult_is_called_with_GraphDestination_THEN_navigates_to_PopUpToDestination() {
         val result = mockk<Any>()
         val destination = mockk<GraphDestination>()
         val inclusive = Random.nextBoolean()
@@ -97,7 +97,7 @@ class NavigatorExtTest {
     }
 
     @Test
-    fun `WHEN popUpToWithResult is called with ScreenDestination THEN navigates to PopUpToDestination`() {
+    fun WHEN_popUpToWithResult_is_called_with_ScreenDestination_THEN_navigates_to_PopUpToDestination() {
         val result = mockk<Any>()
         val destination = mockk<ScreenDestination>()
         val inclusive = Random.nextBoolean()
@@ -111,7 +111,7 @@ class NavigatorExtTest {
     }
 
     @Test
-    fun `WHEN getResultFlowFor is called THEN get result flow for current destination`() {
+    fun WHEN_getResultFlowFor_is_called_THEN_get_result_flow_for_current_destination() {
         // TODO
     }
 

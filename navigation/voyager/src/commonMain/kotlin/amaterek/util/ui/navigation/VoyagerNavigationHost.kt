@@ -53,8 +53,9 @@ fun VoyagerNavigationHost(
 @OptIn(InternalNavigation::class, InternalVoyagerApi::class)
 @Composable
 fun VoyagerNavigationHost(
-    navigator: VoyagerNavigator,
+    navigator: Navigator,
 ) {
+    navigator as VoyagerNavigator
     CompositionLocalProvider(
         LocalNavigator provides navigator,
     ) {
@@ -101,7 +102,7 @@ fun rememberVoyagerNavigator(
     startDestination: ScreenDestination,
     graph: Set<GraphDestination>,
     parent: Navigator?,
-): VoyagerNavigator = remember { VoyagerNavigator(listOf(startDestination), graph, parent) }
+): Navigator = remember { VoyagerNavigator(listOf(startDestination), graph, parent) }
 
 @OptIn(InternalNavigation::class)
 @NonRestartableComposable
@@ -110,7 +111,7 @@ fun rememberVoyagerNavigator(
     startBackStack: List<ScreenDestination>,
     graph: Set<GraphDestination>,
     parent: Navigator?,
-): VoyagerNavigator = remember { VoyagerNavigator(startBackStack, graph, parent) }
+): Navigator = remember { VoyagerNavigator(startBackStack, graph, parent) }
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable

@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetTree
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.kotlinCompose)
@@ -37,6 +40,7 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.runtime)
         }
+
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)
         }
@@ -47,6 +51,7 @@ kotlin {
             implementation(libs.mockk.common)
             implementation(libs.turbine)
         }
+
         jvmTest.dependencies {
             implementation(libs.junit)
             implementation(libs.mockk)
@@ -58,6 +63,25 @@ kotlin {
     }
 
     task("testClasses")
+
+    androidTarget {
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        instrumentedTestVariant.sourceSetTree.set(KotlinSourceSetTree.test)
+    }
+}
+
+dependencies {
+    androidTestImplementation(project(":navigation:jetpack"))
+    androidTestImplementation(project(":navigation:voyager"))
+    androidTestImplementation(libs.androidx.activity.compose)
+    androidTestImplementation(libs.androidx.appcompat)
+    androidTestImplementation(libs.androidx.lifecycle.runtime)
+    androidTestImplementation(libs.compose.material3)
+    androidTestImplementation(libs.compose.ui)
+    androidTestImplementation(libs.compose.ui.test.junit4)
+    androidTestImplementation(libs.compose.ui.test.manifest)
+    androidTestImplementation(libs.junit)
+    androidTestImplementation(libs.mockk)
 }
 
 android {
@@ -67,12 +91,20 @@ android {
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
 
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
         consumerProguardFile("consumer-rules.pro")
     }
 
     dependencies {
         testImplementation(libs.junit)
         testImplementation(libs.mockk)
+    }
+
+    packaging {
+        resources {
+            pickFirsts += "/META-INF/LICENSE*.md"
+        }
     }
 }
 
