@@ -68,7 +68,7 @@ class NavigatorExtTest {
         val inclusive = Random.nextBoolean()
         test(
             on = { popUpTo(destination, inclusive = inclusive) },
-            expect = PopUpToClass(popUpTo = destination, inclusive = inclusive, replaceWith = null),
+            expect = PopUpTo.DestinationClass(destination = destination, inclusive = inclusive, replaceWith = null),
         )
     }
 
@@ -78,7 +78,7 @@ class NavigatorExtTest {
         val inclusive = Random.nextBoolean()
         test(
             on = { popUpTo(destination, inclusive = inclusive) },
-            expect = PopUpTo(popUpTo = destination, inclusive = inclusive, replaceWith = null),
+            expect = PopUpTo.DestinationInstance(destination = destination, inclusive = inclusive, replaceWith = null),
         )
     }
 
@@ -90,7 +90,7 @@ class NavigatorExtTest {
         test(
             on = { popUpToWithResult(destination, result, inclusive = inclusive) },
             expect = WithResult(
-                destination = PopUpToClass(popUpTo = destination, inclusive = inclusive, replaceWith = null),
+                destination = PopUpTo.DestinationClass(destination = destination, inclusive = inclusive, replaceWith = null),
                 result = result,
             ),
         )
@@ -104,7 +104,7 @@ class NavigatorExtTest {
         test(
             on = { popUpToWithResult(destination, result, inclusive = inclusive) },
             expect = WithResult(
-                destination = PopUpTo(popUpTo = destination, inclusive = inclusive, replaceWith = null),
+                destination = PopUpTo.DestinationInstance(destination = destination, inclusive = inclusive, replaceWith = null),
                 result = result,
             ),
         )

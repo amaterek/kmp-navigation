@@ -2,6 +2,7 @@ package amaterek.util.ui.navigation.internal
 
 import amaterek.util.ui.navigation.Navigator
 import amaterek.util.ui.navigation.annotation.InternalNavigation
+import amaterek.util.ui.navigation.destination.ControlDestination
 import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.PreviousDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
@@ -94,11 +95,7 @@ class TestBaseNavigator(
         requireMockError()
     }
 
-    public override fun doPopUpTo(popUpTo: ScreenDestination, inclusive: Boolean, replaceWith: ScreenDestination?) {
-        requireMockError()
-    }
-
-    public override fun doPopUpTo(popUpTo: GraphDestination, inclusive: Boolean, replaceWith: ScreenDestination?) {
+    public override fun doPopUpTo(popUpTo: ControlDestination.PopUpTo) {
         requireMockError()
     }
 

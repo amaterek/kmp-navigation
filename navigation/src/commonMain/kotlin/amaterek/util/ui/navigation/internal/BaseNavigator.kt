@@ -49,38 +49,18 @@ abstract class BaseNavigator(
             when (val target = destination.destination) {
                 PreviousDestination -> doNavigateTo(target, destination.result)
 
-                is ControlDestination.PopUpTo, is ControlDestination.PopUpToClass ->
+                is ControlDestination.PopUpTo ->
                     doNavigateTo(target, destination.result)
 
                 else -> destinationIsNotSupportedForWithResultError(destination.destination)
             }
         }
 
-        is ControlDestination.Replace ->
-            doPopUpTo(
-                popUpTo = backStack.currentDestinationFlow.value,
-                inclusive = true,
-                replaceWith = destination.destination,
-            )
-
         is ControlDestination.ReplaceAll ->
             doReplaceAll(destination.destination)
 
         is ControlDestination.PopUpTo -> {
-            doPopUpTo(
-                popUpTo = destination.popUpTo,
-                inclusive = destination.inclusive,
-                replaceWith = destination.replaceWith,
-            )
-            setResult(result)
-        }
-
-        is ControlDestination.PopUpToClass -> {
-            doPopUpTo(
-                popUpTo = destination.popUpTo,
-                inclusive = destination.inclusive,
-                replaceWith = destination.replaceWith,
-            )
+            doPopUpTo(destination)
             setResult(result)
         }
 
@@ -134,9 +114,7 @@ abstract class BaseNavigator(
 
     protected abstract fun doNavigateBack()
 
-    protected abstract fun doPopUpTo(popUpTo: ScreenDestination, inclusive: Boolean, replaceWith: ScreenDestination?)
-
-    protected abstract fun doPopUpTo(popUpTo: GraphDestination, inclusive: Boolean, replaceWith: ScreenDestination?)
+    protected abstract fun doPopUpTo(popUpTo: ControlDestination.PopUpTo)
 
     protected abstract fun doPush(destination: ScreenDestination)
 

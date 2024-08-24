@@ -18,8 +18,8 @@ data object PreviousDestination : Destination
 @Stable
 inline fun PopUpToDestination(destination: Destination, inclusive: Boolean = false): Destination = when (destination) {
     is ScreenDestination ->
-        ControlDestination.PopUpTo(
-            popUpTo = destination,
+        ControlDestination.PopUpTo.DestinationInstance(
+            destination = destination,
             inclusive = inclusive,
             replaceWith = null,
         )
@@ -30,8 +30,8 @@ inline fun PopUpToDestination(destination: Destination, inclusive: Boolean = fal
 @OptIn(InternalNavigation::class)
 @Stable
 fun PopUpToDestination(destination: GraphDestination, inclusive: Boolean = false): Destination =
-    ControlDestination.PopUpToClass(
-        popUpTo = destination,
+    ControlDestination.PopUpTo.DestinationClass(
+        destination = destination,
         inclusive = inclusive,
         replaceWith = null,
     )
@@ -40,30 +40,34 @@ fun PopUpToDestination(destination: GraphDestination, inclusive: Boolean = false
 @Immutable
 sealed interface ControlDestination : Destination {
 
-    @Immutable
     data class WithResult(val destination: Destination, val result: Any) : ControlDestination
 
-    @Immutable
-    data class Replace(val destination: ScreenDestination) : ControlDestination
-
-    @Immutable
     data class ReplaceAll(val destination: ScreenDestination) : ControlDestination
 
     @Immutable
-    data class PopUpTo(
-        val popUpTo: ScreenDestination,
-        val inclusive: Boolean,
-        val replaceWith: ScreenDestination?,
-    ) : ControlDestination
+    sealed interface PopUpTo : ControlDestination {
 
-    @Immutable
-    data class PopUpToClass(
-        val popUpTo: GraphDestination,
-        val inclusive: Boolean,
-        val replaceWith: ScreenDestination?,
-    ) : ControlDestination
+        val inclusive: Boolean
+        val replaceWith: ScreenDestination?
 
-    @Immutable
+        data class CurrentDestination(
+            override val inclusive: Boolean,
+            override val replaceWith: ScreenDestination?,
+        ) : PopUpTo
+
+        data class DestinationInstance(
+            val destination: ScreenDestination,
+            override val inclusive: Boolean,
+            override val replaceWith: ScreenDestination?,
+        ) : PopUpTo
+
+        data class DestinationClass(
+            val destination: GraphDestination,
+            override val inclusive: Boolean,
+            override val replaceWith: ScreenDestination?,
+        ) : PopUpTo
+    }
+
     data class RedirectToParent(
         val destination: Destination,
         val strategy: RedirectToParentStrategy,

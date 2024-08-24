@@ -4,6 +4,7 @@ package amaterek.util.ui.navigation.jetpack
 
 import amaterek.util.ui.navigation.Navigator
 import amaterek.util.ui.navigation.annotation.InternalNavigation
+import amaterek.util.ui.navigation.destination.ControlDestination
 import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.internal.BaseNavigator
@@ -108,10 +109,23 @@ class JetpackNavigator(
         navHostController.popBackStack()
     }
 
-    override fun doPopUpTo(popUpTo: ScreenDestination, inclusive: Boolean, replaceWith: ScreenDestination?) {
+    override fun doPopUpTo(popUpTo: ControlDestination.PopUpTo) {
+        when (popUpTo) {
+            is ControlDestination.PopUpTo.CurrentDestination ->
+                doPopUpTo(backStack.currentDestinationFlow.value::class, popUpTo.inclusive, popUpTo.replaceWith)
+
+            is ControlDestination.PopUpTo.DestinationInstance ->
+                doPopUpTo(popUpTo.destination, popUpTo.inclusive, popUpTo.replaceWith)
+
+            is ControlDestination.PopUpTo.DestinationClass ->
+                doPopUpTo(popUpTo.destination, popUpTo.inclusive, popUpTo.replaceWith)
+        }
+    }
+
+    private fun doPopUpTo(destination: ScreenDestination, inclusive: Boolean, replaceWith: ScreenDestination?) {
         // NavHostController doesn't support popup to the same destination route if there are multiple instances of it
         // This is workaround for this case
-        val screenIndex = backStack.lastIndexOf(popUpTo)
+        val screenIndex = backStack.lastIndexOf(destination)
         if (screenIndex < 0) return
         val popupCount = backStack.size - screenIndex + if (inclusive) 1 else 0
         if (popupCount > 0) {
@@ -120,16 +134,16 @@ class JetpackNavigator(
         if (replaceWith != null) navHostController.navigate(replaceWith)
     }
 
-    override fun doPopUpTo(popUpTo: GraphDestination, inclusive: Boolean, replaceWith: ScreenDestination?) {
+    private fun doPopUpTo(destination: GraphDestination, inclusive: Boolean, replaceWith: ScreenDestination?) {
         if (replaceWith != null) {
             navHostController.navigate(replaceWith) {
-                popUpTo(route = popUpTo.baseRoute) {
+                popUpTo(route = destination.baseRoute) {
                     this.inclusive = inclusive
                 }
             }
         } else {
             navHostController.popBackStack(
-                route = popUpTo.baseRoute,
+                route = destination.baseRoute,
                 inclusive = inclusive,
             )
         }

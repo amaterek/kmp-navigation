@@ -8,7 +8,6 @@ import androidx.compose.runtime.Stable
 fun Destination.withResult(result: Any): Destination = when (this) {
     is PreviousDestination,
     is ControlDestination.PopUpTo,
-    is ControlDestination.PopUpToClass,
     -> ControlDestination.WithResult(destination = this, result = result)
     else -> invalidDestinationForResultError(this)
 }
@@ -16,7 +15,7 @@ fun Destination.withResult(result: Any): Destination = when (this) {
 @OptIn(InternalNavigation::class)
 @Stable
 fun ScreenDestination.replace(): Destination =
-    ControlDestination.Replace(destination = this)
+    ControlDestination.PopUpTo.CurrentDestination(inclusive = true, replaceWith = this)
 
 @OptIn(InternalNavigation::class)
 @Stable
@@ -29,8 +28,20 @@ fun ScreenDestination.popUpTo(
     destination: ScreenDestination,
     inclusive: Boolean = false,
 ): Destination =
-    ControlDestination.PopUpTo(
-        popUpTo = destination,
+    ControlDestination.PopUpTo.DestinationInstance(
+        destination = destination,
+        inclusive = inclusive,
+        replaceWith = this,
+    )
+
+@OptIn(InternalNavigation::class)
+@Stable
+fun ScreenDestination.popUpTo(
+    destination: GraphDestination,
+    inclusive: Boolean = false,
+): Destination =
+    ControlDestination.PopUpTo.DestinationClass(
+        destination = destination,
         inclusive = inclusive,
         replaceWith = this,
     )

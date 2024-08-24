@@ -3,6 +3,7 @@
 package amaterek.util.ui.navigation
 
 import amaterek.util.ui.navigation.annotation.InternalNavigation
+import amaterek.util.ui.navigation.destination.ControlDestination
 import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.internal.BaseNavigator
@@ -64,12 +65,19 @@ class VoyagerNavigator internal constructor(
         doIfNavControllerAvailableOrThrow { pop() }
     }
 
-    override fun doPopUpTo(popUpTo: ScreenDestination, inclusive: Boolean, replaceWith: ScreenDestination?) {
-        doPopUpTo(inclusive, replaceWith) { it == popUpTo }
-    }
+    override fun doPopUpTo(popUpTo: ControlDestination.PopUpTo) {
+        when (popUpTo) {
+            is ControlDestination.PopUpTo.CurrentDestination -> {
+                val destinationClass = backStack.currentDestinationFlow.value::class
+                doPopUpTo(popUpTo.inclusive, popUpTo.replaceWith) { it::class == destinationClass }
+            }
 
-    override fun doPopUpTo(popUpTo: GraphDestination, inclusive: Boolean, replaceWith: ScreenDestination?) {
-        doPopUpTo(inclusive, replaceWith) { it::class == popUpTo }
+            is ControlDestination.PopUpTo.DestinationInstance ->
+                doPopUpTo(popUpTo.inclusive, popUpTo.replaceWith) { it == popUpTo.destination }
+
+            is ControlDestination.PopUpTo.DestinationClass ->
+                doPopUpTo(popUpTo.inclusive, popUpTo.replaceWith) { it::class == popUpTo.destination }
+        }
     }
 
     private inline fun doPopUpTo(inclusive: Boolean, replaceWith: ScreenDestination?, crossinline condition: (ScreenDestination) -> Boolean) {
