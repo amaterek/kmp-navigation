@@ -16,7 +16,7 @@ data object PreviousDestination : Destination
 @Suppress("FunctionName")
 @OptIn(InternalNavigation::class)
 @Stable
-inline fun PopUpToDestination(destination: Destination, inclusive: Boolean = false): Destination = when (destination) {
+fun PopUpToDestination(destination: Destination, inclusive: Boolean = false): Destination = when (destination) {
     is ScreenDestination ->
         ControlDestination.PopUpTo.DestinationInstance(
             destination = destination,
@@ -26,10 +26,10 @@ inline fun PopUpToDestination(destination: Destination, inclusive: Boolean = fal
     else -> invalidDestinationForPopUpError(destination)
 }
 
-@Suppress("FunctionName")
+@Suppress("FunctionName", "NOTHING_TO_INLINE")
 @OptIn(InternalNavigation::class)
 @Stable
-fun PopUpToDestination(destination: GraphDestination, inclusive: Boolean = false): Destination =
+inline fun PopUpToDestination(destination: GraphDestination, inclusive: Boolean = false): Destination =
     ControlDestination.PopUpTo.DestinationClass(
         destination = destination,
         inclusive = inclusive,
@@ -42,13 +42,16 @@ sealed interface ControlDestination : Destination {
 
     data class WithResult(val destination: Destination, val result: Any) : ControlDestination
 
-    data class ReplaceAll(val destination: ScreenDestination) : ControlDestination
-
     @Immutable
     sealed interface PopUpTo : ControlDestination {
 
         val inclusive: Boolean
         val replaceWith: ScreenDestination?
+
+        data class FirstDestination(
+            override val inclusive: Boolean,
+            override val replaceWith: ScreenDestination?,
+        ) : PopUpTo
 
         data class CurrentDestination(
             override val inclusive: Boolean,

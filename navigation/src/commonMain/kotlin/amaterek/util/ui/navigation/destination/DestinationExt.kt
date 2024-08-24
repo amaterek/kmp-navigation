@@ -20,7 +20,12 @@ fun ScreenDestination.replace(): Destination =
 @OptIn(InternalNavigation::class)
 @Stable
 fun ScreenDestination.replaceAll(): Destination =
-    ControlDestination.ReplaceAll(destination = this)
+    ControlDestination.PopUpTo.FirstDestination(inclusive = true, replaceWith = this)
+
+@OptIn(InternalNavigation::class)
+@Stable
+fun ScreenDestination.popUpToFirst(): Destination =
+    ControlDestination.PopUpTo.FirstDestination(inclusive = false, replaceWith = this)
 
 @OptIn(InternalNavigation::class)
 @Stable

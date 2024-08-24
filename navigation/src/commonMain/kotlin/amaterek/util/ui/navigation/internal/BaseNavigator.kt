@@ -56,9 +56,6 @@ abstract class BaseNavigator(
             }
         }
 
-        is ControlDestination.ReplaceAll ->
-            doReplaceAll(destination.destination)
-
         is ControlDestination.PopUpTo -> {
             doPopUpTo(destination)
             setResult(result)
@@ -117,6 +114,4 @@ abstract class BaseNavigator(
     protected abstract fun doPopUpTo(popUpTo: ControlDestination.PopUpTo)
 
     protected abstract fun doPush(destination: ScreenDestination)
-
-    protected abstract fun doReplaceAll(destination: ScreenDestination)
 }

@@ -8,6 +8,7 @@ import amaterek.util.ui.navigation.destination.ControlDestination
 import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.internal.BaseNavigator
+import amaterek.util.ui.navigation.popUpTo
 import android.annotation.SuppressLint
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -111,14 +112,31 @@ class JetpackNavigator(
 
     override fun doPopUpTo(popUpTo: ControlDestination.PopUpTo) {
         when (popUpTo) {
-            is ControlDestination.PopUpTo.CurrentDestination ->
-                doPopUpTo(backStack.currentDestinationFlow.value::class, popUpTo.inclusive, popUpTo.replaceWith)
+            is ControlDestination.PopUpTo.FirstDestination ->
+                doPopUpToFirst(popUpTo.inclusive, popUpTo.replaceWith)
+
+            is ControlDestination.PopUpTo.CurrentDestination -> {
+                val destinationClass = backStack.currentDestinationFlow.value::class
+                doPopUpTo(destinationClass, popUpTo.inclusive, popUpTo.replaceWith)
+            }
 
             is ControlDestination.PopUpTo.DestinationInstance ->
                 doPopUpTo(popUpTo.destination, popUpTo.inclusive, popUpTo.replaceWith)
 
             is ControlDestination.PopUpTo.DestinationClass ->
                 doPopUpTo(popUpTo.destination, popUpTo.inclusive, popUpTo.replaceWith)
+        }
+    }
+
+    private fun doPopUpToFirst(inclusive: Boolean, replaceWith: ScreenDestination?) = with(navHostController) {
+        if (inclusive) {
+            if (inclusive && replaceWith != null) {
+                repeat(currentBackStack.value.size - 1) { popBackStack() }
+                popUpTo(replaceWith, inclusive = true)
+            } else error("Backstack can not be empty")
+        } else {
+            repeat(currentBackStack.value.size - 1) { popBackStack() }
+            replaceWith?.let { navigateTo(it) }
         }
     }
 
@@ -152,29 +170,13 @@ class JetpackNavigator(
     override fun doPush(destination: ScreenDestination) {
         navHostController.navigate(destination)
     }
-
-    override fun doReplaceAll(destination: ScreenDestination) {
-        navHostController.run {
-            currentBackStack.value.firstOrNull()?.let { popUpToNavDestination ->
-                navigate(destination) {
-                    popUpTo(id = popUpToNavDestination.destination.id) {
-                        inclusive = true
-                    }
-                }
-            } ?: navigate(destination)
-        }
-    }
-}
-
-private inline fun NavController.navigate(destination: ScreenDestination) {
-    navigate(destination.route)
 }
 
 private inline fun NavController.navigate(
     destination: ScreenDestination,
-    noinline builder: NavOptionsBuilder.() -> Unit,
+    noinline builder: (NavOptionsBuilder.() -> Unit)? = null,
 ) {
-    navigate(destination.route, navOptions(builder))
+    navigate(destination.route, builder?.let { navOptions(it) })
 }
 
 private const val ResultFlowKey = "navigation_result"

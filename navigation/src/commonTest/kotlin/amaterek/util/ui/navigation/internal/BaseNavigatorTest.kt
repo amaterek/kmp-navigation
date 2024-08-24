@@ -103,9 +103,5 @@ class TestBaseNavigator(
         requireMockError()
     }
 
-    public override fun doReplaceAll(destination: ScreenDestination) {
-        requireMockError()
-    }
-
     private fun requireMockError(): Nothing = error("Requires to be mocked")
 }
