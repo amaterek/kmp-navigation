@@ -66,6 +66,7 @@ class JetpackNavigator(
         override val currentDestinationFlow: StateFlow<ScreenDestination> = _currentEntryFlow.asStateFlow()
 
         override fun lastIndexOf(destination: ScreenDestination): Int {
+            if (destination::class.objectInstance != null) return lastIndexOf(destination::class)
             val baseRoute = destination.baseRoute
             val argument = destination.argument?.let { "{$it}" }
             return navHostController.currentBackStack.value
