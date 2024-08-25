@@ -38,7 +38,6 @@ internal class GetDefaultNavigationHost : NavigatorProvider {
         )
     }
 
-    @OptIn(InternalNavigation::class)
     @Composable
     override fun rememberNavigator(
         startDestination: ScreenDestination,

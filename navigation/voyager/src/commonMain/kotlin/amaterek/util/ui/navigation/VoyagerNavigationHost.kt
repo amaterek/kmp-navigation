@@ -28,7 +28,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import cafe.adriel.voyager.navigator.Navigator as VNavigator
 
-@OptIn(InternalNavigation::class)
 @NonRestartableComposable
 @Composable
 fun VoyagerNavigationHost(
@@ -39,7 +38,6 @@ fun VoyagerNavigationHost(
     navigator = rememberVoyagerNavigator(startBackStack, graph, parent),
 )
 
-@OptIn(InternalNavigation::class)
 @NonRestartableComposable
 @Composable
 fun VoyagerNavigationHost(

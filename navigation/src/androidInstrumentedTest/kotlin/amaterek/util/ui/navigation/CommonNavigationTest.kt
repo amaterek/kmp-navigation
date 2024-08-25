@@ -1,6 +1,5 @@
 package amaterek.util.ui.navigation
 
-import amaterek.util.ui.navigation.annotation.InternalNavigation
 import amaterek.util.ui.navigation.common.InstanceDestination
 import amaterek.util.ui.navigation.common.ObjectDestination1
 import amaterek.util.ui.navigation.common.ObjectDestination2
@@ -16,7 +15,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-@OptIn(InternalNavigation::class)
 @Suppress("MagicNumber", "TooManyFunctions")
 abstract class CommonNavigationTest(
     rememberNavigator: @Composable (

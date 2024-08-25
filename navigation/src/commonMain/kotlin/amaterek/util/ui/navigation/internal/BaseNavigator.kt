@@ -9,7 +9,6 @@ import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.PreviousDestination
 import amaterek.util.ui.navigation.destination.RedirectToParentStrategy
 import amaterek.util.ui.navigation.destination.ScreenDestination
-import amaterek.util.ui.navigation.destination.invalidDestinationForResultError
 import amaterek.util.ui.navigation.destination.withResult
 
 @Suppress("TooManyFunctions")
@@ -118,7 +117,7 @@ abstract class BaseNavigator(
 
     @Suppress("MemberVisibilityCanBePrivate")
     protected fun destinationIsNotSupportedForWithResultError(destination: Destination): Nothing =
-        invalidDestinationForResultError(destination)
+        error("Requested not supported destination for result: $destination")
 
     private fun destinationIsNotInBackStack(destination: GraphDestination): Nothing =
         error("Requested destination is not in backstack: $destination")

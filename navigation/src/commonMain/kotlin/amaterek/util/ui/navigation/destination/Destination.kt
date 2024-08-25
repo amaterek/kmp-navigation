@@ -1,6 +1,5 @@
 package amaterek.util.ui.navigation.destination
 
-import amaterek.util.ui.navigation.annotation.InternalNavigation
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlin.reflect.KClass
@@ -14,20 +13,15 @@ typealias GraphDestination = KClass<out ScreenDestination>
 data object PreviousDestination : Destination
 
 @Suppress("FunctionName")
-@OptIn(InternalNavigation::class)
 @Stable
-fun PopUpToDestination(destination: Destination, inclusive: Boolean = false): Destination = when (destination) {
-    is ScreenDestination ->
-        ControlDestination.PopUpTo.DestinationInstance(
-            destination = destination,
-            inclusive = inclusive,
-            replaceWith = null,
-        )
-    else -> invalidDestinationForPopUpError(destination)
-}
+fun PopUpToDestination(destination: ScreenDestination, inclusive: Boolean = false): Destination =
+    ControlDestination.PopUpTo.DestinationInstance(
+        destination = destination,
+        inclusive = inclusive,
+        replaceWith = null,
+    )
 
 @Suppress("FunctionName", "NOTHING_TO_INLINE")
-@OptIn(InternalNavigation::class)
 @Stable
 inline fun PopUpToDestination(destination: GraphDestination, inclusive: Boolean = false): Destination =
     ControlDestination.PopUpTo.DestinationClass(
@@ -37,7 +31,6 @@ inline fun PopUpToDestination(destination: GraphDestination, inclusive: Boolean 
     )
 
 @Suppress("FunctionName", "NOTHING_TO_INLINE")
-@OptIn(InternalNavigation::class)
 @Stable
 inline fun PopUpToFirstDestination(): Destination =
     ControlDestination.PopUpTo.FirstDestination(
@@ -45,7 +38,6 @@ inline fun PopUpToFirstDestination(): Destination =
         replaceWith = null,
     )
 
-@InternalNavigation
 @Immutable
 sealed interface ControlDestination : Destination {
 
@@ -86,7 +78,7 @@ sealed interface ControlDestination : Destination {
     ) : ControlDestination
 }
 
-@InternalNavigation
+@Immutable
 sealed interface RedirectToParentStrategy {
 
     data object IfNotInCurrentGraph : RedirectToParentStrategy
