@@ -8,7 +8,6 @@ import amaterek.util.ui.navigation.destination.ControlDestination
 import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.internal.BaseNavigator
-import amaterek.util.ui.navigation.popUpTo
 import android.annotation.SuppressLint
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -69,14 +68,16 @@ class JetpackNavigator(
         override fun lastIndexOf(destination: ScreenDestination): Int {
             val baseRoute = destination.baseRoute
             val argument = destination.argument?.let { "{$it}" }
-            return navHostController.currentBackStack.value.indexOfLast {
-                it.destination.route == baseRoute && it.arguments?.getString(ArgumentsName) == argument
-            }
+            return navHostController.currentBackStack.value
+                .indexOfLast { it.destination.route == baseRoute && it.arguments?.getString(ArgumentsName) == argument }
+                .let { if (it >= 0) it - 1 else it }
         }
 
         override fun lastIndexOf(destination: GraphDestination): Int {
             val baseRoute = destination.baseRoute
-            return navHostController.currentBackStack.value.indexOfLast { it.destination.route == baseRoute }
+            return navHostController.currentBackStack.value
+                .indexOfLast { it.destination.route == baseRoute }
+                .let { if (it >= 0) it - 1 else it }
         }
 
         private fun purgeScreenDestinationsMap() {
@@ -131,11 +132,13 @@ class JetpackNavigator(
     private fun doPopUpToFirst(inclusive: Boolean, replaceWith: ScreenDestination?) = with(navHostController) {
         if (inclusive) {
             if (inclusive && replaceWith != null) {
-                repeat(currentBackStack.value.size - 1) { popBackStack() }
-                popUpTo(replaceWith, inclusive = true)
+                repeat(currentBackStack.value.size - 2) { popBackStack() }
+                navigate(replaceWith) {
+                    popUpTo(id = currentBackStack.value.first().destination.id)
+                }
             } else error("Backstack can not be empty")
         } else {
-            repeat(currentBackStack.value.size - 1) { popBackStack() }
+            repeat(currentBackStack.value.size - 2) { popBackStack() }
             replaceWith?.let { navigateTo(it) }
         }
     }
@@ -145,7 +148,7 @@ class JetpackNavigator(
         // This is workaround for this case
         val screenIndex = backStack.lastIndexOf(destination)
         if (screenIndex < 0) return
-        val popupCount = backStack.size - screenIndex + if (inclusive) 1 else 0
+        val popupCount = backStack.size - screenIndex + if (inclusive) 0 else -1
         if (popupCount > 0) {
             repeat(popupCount) { navHostController.popBackStack() }
         }
