@@ -109,8 +109,23 @@ class VoyagerNavigator internal constructor(
         replaceWith: ScreenDestination?,
         condition: (ScreenDestination) -> Boolean,
     ) = doIfNavControllerAvailableOrThrow {
-        popUntil(inclusive) { condition(it.destination) }
-        replaceWith?.let { push(VoyagerBackStackEntry(it)) }
+        val replaceWithEntry = replaceWith?.let { VoyagerBackStackEntry(it) }
+        val index = items.indexOfLast { condition((it as VoyagerBackStackEntry).destination) }
+        when {
+            index < 0 -> replaceWithEntry?.let { push(it) }
+            index == 0 -> doPopUpToFirst(inclusive, replaceWith)
+            index == items.lastIndex -> doPopUpToCurrent(inclusive, replaceWith)
+            else -> {
+                if (replaceWithEntry != null) {
+                    val item = items[index]
+                    popUntil { it === item }
+                    if (inclusive) replace(replaceWithEntry) else push(replaceWithEntry)
+                } else {
+                    val item = items[index + if (inclusive) -1 else 0]
+                    popUntil { it === item }
+                }
+            }
+        }
     }
 
     override fun doPush(destination: ScreenDestination) = doIfNavControllerAvailableOrThrow {
@@ -120,17 +135,6 @@ class VoyagerNavigator internal constructor(
     private inline fun doIfNavControllerAvailableOrThrow(action: VoyagerHavHostController.() -> Unit) {
         navHostController?.action() ?: error("No Voyager navigation host")
     }
-}
-
-private inline fun VoyagerHavHostController.popUntil(
-    inclusive: Boolean,
-    crossinline condition: (VoyagerBackStackEntry) -> Boolean,
-) {
-    val index = items
-        .indexOfLast { condition((it as VoyagerBackStackEntry)) }
-        .let { if (inclusive) it - 1 else it }
-    val item = items[index]
-    popUntil { it === item }
 }
 
 @Stable
