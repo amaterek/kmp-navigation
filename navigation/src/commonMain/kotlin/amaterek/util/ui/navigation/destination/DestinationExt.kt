@@ -1,5 +1,6 @@
 package amaterek.util.ui.navigation.destination
 
+import amaterek.util.ui.navigation.annotation.InternalNavigation
 import androidx.compose.runtime.Stable
 
 @Stable
@@ -10,18 +11,22 @@ fun PreviousDestination.withResult(result: Any): NavigatorDestination =
 fun Destination.withResult(result: Any): NavigatorDestination =
     NavigatorDestination.WithResult(destination = this, result = result)
 
+@OptIn(InternalNavigation::class)
 @Stable
 fun ScreenDestination.replace(): NavigatorDestination =
     NavigatorDestination.PopUpTo.CurrentDestination(inclusive = true, replaceWith = this)
 
+@OptIn(InternalNavigation::class)
 @Stable
 fun ScreenDestination.replaceAll(): NavigatorDestination =
     NavigatorDestination.PopUpTo.FirstDestination(inclusive = true, replaceWith = this)
 
+@OptIn(InternalNavigation::class)
 @Stable
 fun ScreenDestination.popUpToFirst(): NavigatorDestination =
     NavigatorDestination.PopUpTo.FirstDestination(inclusive = false, replaceWith = this)
 
+@OptIn(InternalNavigation::class)
 @Stable
 fun ScreenDestination.popUpTo(
     destination: ScreenDestination,
@@ -33,6 +38,7 @@ fun ScreenDestination.popUpTo(
         replaceWith = this,
     )
 
+@OptIn(InternalNavigation::class)
 @Stable
 fun ScreenDestination.popUpTo(
     destination: GraphDestination,
@@ -44,6 +50,7 @@ fun ScreenDestination.popUpTo(
         replaceWith = this,
     )
 
+@OptIn(InternalNavigation::class)
 @Stable
 fun Destination.redirectToParentIfNotInGraph(): Destination =
     NavigatorDestination.RedirectToParent(
@@ -51,6 +58,7 @@ fun Destination.redirectToParentIfNotInGraph(): Destination =
         strategy = RedirectToParentStrategy.IfNotInCurrentGraph,
     )
 
+@OptIn(InternalNavigation::class)
 @Stable
 fun Destination.redirectToParent(deep: Int = 1): Destination =
     NavigatorDestination.RedirectToParent(

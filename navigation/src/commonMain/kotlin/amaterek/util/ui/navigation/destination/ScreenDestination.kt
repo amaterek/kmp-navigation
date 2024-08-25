@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 
 @Stable
-interface ScreenDestination : Destination, ScreenTransitionProvider, Serializable {
+interface ScreenDestination : NavigatorDestination, ScreenTransitionProvider, Serializable {
 
     @Composable
     fun Content()

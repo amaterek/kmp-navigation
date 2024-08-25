@@ -6,6 +6,9 @@ import amaterek.util.ui.navigation.canNavigateBack
 import amaterek.util.ui.navigation.destination.Destination
 import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.NavigatorDestination
+import amaterek.util.ui.navigation.destination.NavigatorDestination.PopUpTo
+import amaterek.util.ui.navigation.destination.NavigatorDestination.RedirectToParent
+import amaterek.util.ui.navigation.destination.NavigatorDestination.WithResult
 import amaterek.util.ui.navigation.destination.PreviousDestination
 import amaterek.util.ui.navigation.destination.RedirectToParentStrategy
 import amaterek.util.ui.navigation.destination.ScreenDestination
@@ -24,44 +27,34 @@ abstract class BaseNavigator(
 
     private fun doNavigateTo(destination: Destination, result: Any?) {
         when (destination) {
-            PreviousDestination -> {
-                if (canNavigateBack()) {
-                    doNavigateBack()
-                    result?.let { setResult(result) }
-                } else redirectToParent(destination, result)
-            }
-
-            is ScreenDestination ->
-                if (graph.contains(destination::class)) {
-                    doPush(destination)
-                } else destinationNotFoundInGraphError(destination)
-
+            PreviousDestination -> navigateToPreviousDestination(result)
             is NavigatorDestination -> handleControlDestination(destination, result)
-
             else -> destinationIsNotSupportedError(destination)
         }
     }
 
     @Suppress("CyclomaticComplexMethod", "NestedBlockDepth")
     private fun handleControlDestination(destination: NavigatorDestination, result: Any?) = when (destination) {
-        is NavigatorDestination.WithResult -> {
+        is ScreenDestination ->
+            if (graph.contains(destination::class)) {
+                doPush(destination)
+            } else destinationNotFoundInGraphError(destination)
+
+        is WithResult -> {
             when (val target = destination.destination) {
                 PreviousDestination -> doNavigateTo(target, destination.result)
-
-                is NavigatorDestination.PopUpTo ->
-                    doNavigateTo(target, destination.result)
-
+                is PopUpTo -> doNavigateTo(target, destination.result)
                 else -> destinationIsNotSupportedForWithResultError(destination.destination)
             }
         }
 
-        is NavigatorDestination.PopUpTo -> {
+        is PopUpTo -> {
             destination.requireInBackstack()
             doPopUpTo(destination)
             setResult(result)
         }
 
-        is NavigatorDestination.RedirectToParent -> parent?.let {
+        is RedirectToParent -> parent?.let {
             when (destination.strategy) {
                 RedirectToParentStrategy.IfNotInCurrentGraph -> {
                     if (!graph.contains(destination.destination::class)) {
@@ -74,7 +67,7 @@ abstract class BaseNavigator(
                     val times = destination.strategy.value
                     if (times > 1) {
                         it.navigateTo(
-                            NavigatorDestination.RedirectToParent(
+                            RedirectToParent(
                                 destination = destination,
                                 strategy = RedirectToParentStrategy.Deep(times - 1),
                             ),
@@ -87,17 +80,24 @@ abstract class BaseNavigator(
         } ?: noParentNavigatorError(destination)
     }
 
+    private fun navigateToPreviousDestination(result: Any?) {
+        if (canNavigateBack()) {
+            doNavigateBack()
+            result?.let { setResult(result) }
+        } else redirectToParent(PreviousDestination, result)
+    }
+
     private fun redirectToParent(destination: Destination, result: Any?) {
         parent?.navigateTo(
             result?.let { destination.withResult(result) } ?: destination,
         ) ?: noParentNavigatorError(destination)
     }
 
-    private fun NavigatorDestination.PopUpTo.requireInBackstack() = when (this) {
-        is NavigatorDestination.PopUpTo.DestinationInstance ->
+    private fun PopUpTo.requireInBackstack() = when (this) {
+        is PopUpTo.DestinationInstance ->
             if (backStack.lastIndexOf(destination) < 0) destinationIsNotInBackStack(destination::class) else Unit
 
-        is NavigatorDestination.PopUpTo.DestinationClass ->
+        is PopUpTo.DestinationClass ->
             if (backStack.lastIndexOf(destination) < 0) destinationIsNotInBackStack(destination) else Unit
 
         else -> Unit
@@ -124,7 +124,7 @@ abstract class BaseNavigator(
 
     protected abstract fun doNavigateBack()
 
-    protected abstract fun doPopUpTo(popUpTo: NavigatorDestination.PopUpTo)
+    protected abstract fun doPopUpTo(popUpTo: PopUpTo)
 
     protected abstract fun doPush(destination: ScreenDestination)
 }
