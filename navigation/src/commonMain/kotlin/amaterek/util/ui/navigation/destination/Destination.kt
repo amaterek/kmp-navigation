@@ -36,6 +36,15 @@ inline fun PopUpToDestination(destination: GraphDestination, inclusive: Boolean 
         replaceWith = null,
     )
 
+@Suppress("FunctionName", "NOTHING_TO_INLINE")
+@OptIn(InternalNavigation::class)
+@Stable
+inline fun PopUpToFirstDestination(): Destination =
+    ControlDestination.PopUpTo.FirstDestination(
+        inclusive = false,
+        replaceWith = null,
+    )
+
 @InternalNavigation
 @Immutable
 sealed interface ControlDestination : Destination {

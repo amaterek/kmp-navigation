@@ -61,7 +61,45 @@ class NavigatorExtTest {
         )
     }
 
+    @Test
+    fun WHEN_replace_is_called_THEN_navigates_to_WithResult_control_destination() {
+        val destination = mockk<ScreenDestination>()
+        test(
+            on = { replace(destination) },
+            expect = PopUpTo.CurrentDestination(inclusive = true, replaceWith = destination),
+        )
+    }
+
+    @Test
+    fun WHEN_replaceAll_is_called_THEN_navigates_to_WithResult_control_destination() {
+        val destination = mockk<ScreenDestination>()
+        test(
+            on = { replaceAll(destination) },
+            expect = PopUpTo.FirstDestination(inclusive = true, replaceWith = destination),
+        )
+    }
+
     // PopUpTo
+    @Test
+    fun WHEN_popUpToFirst_is_called_THEN_navigates_to_WithResult_control_destination() {
+        test(
+            on = { popUpToFirst() },
+            expect = PopUpTo.FirstDestination(inclusive = false, replaceWith = null),
+        )
+    }
+
+    @Test
+    fun WHEN_popUpToFirstWithResult_is_called_THEN_navigates_to_WithResult_control_destination() {
+        val result = mockk<Any>()
+        test(
+            on = { popUpToFirstWithResult(result) },
+            expect = WithResult(
+                destination = PopUpTo.FirstDestination(inclusive = false, replaceWith = null),
+                result = result,
+            )
+        )
+    }
+
     @Test
     fun WHEN_popUpTo_is_called_with_GraphDestination_THEN_navigates_to_PopUpToDestination() {
         val destination = mockk<GraphDestination>()
@@ -111,7 +149,7 @@ class NavigatorExtTest {
     }
 
     @Test
-    fun WHEN_getResultFlowFor_is_called_THEN_get_result_flow_for_current_destination() {
+    fun WHEN_resultFlow_is_called_THEN_get_result_flow_for_current_destination() {
         // TODO
     }
 
