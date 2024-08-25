@@ -11,6 +11,7 @@ import amaterek.util.ui.navigation.destination.ScreenDestination
 import androidx.compose.runtime.Composable
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -174,8 +175,12 @@ abstract class CommonNavigationTest(
         expectDestination(instanceDestination3) { navigateTo(it) }
 
         // Pop up to non existing destination
-        runNavigator { popUpTo(ObjectDestination2) }
-        runNavigator { popUpTo(InstanceDestination("4"), inclusive = true) }
+        assertFailsWith<IllegalStateException> {
+            runNavigator { popUpTo(ObjectDestination2) }
+        }
+        assertFailsWith<IllegalStateException> {
+            runNavigator { popUpTo(InstanceDestination("4"), inclusive = true) }
+        }
 
         runNavigator { popUpTo(instanceDestination3) }
         instanceDestination1.expectLastIndexInBackStack(1)
@@ -218,8 +223,12 @@ abstract class CommonNavigationTest(
         expectDestination(instanceDestination3) { navigateTo(it) }
 
         // Pop up to non existing destination
-        runNavigator { popUpTo(ObjectDestination2::class) }
-        runNavigator { popUpTo(ObjectDestination2::class, inclusive = true) }
+        assertFailsWith<IllegalStateException> {
+            runNavigator { popUpTo(ObjectDestination2::class) }
+        }
+        assertFailsWith<IllegalStateException> {
+            runNavigator { popUpTo(ObjectDestination2::class, inclusive = true) }
+        }
 
         runNavigator { popUpTo(InstanceDestination::class) }
         instanceDestination1.expectLastIndexInBackStack(1)
@@ -257,8 +266,12 @@ abstract class CommonNavigationTest(
         expectDestination(instanceDestination2) { navigateTo(it) }
 
         // Pop up to non existing destination
-        runNavigator { popUpTo(ObjectDestination1, replaceWith = ObjectDestination2) }
-        runNavigator { popUpTo(instanceDestination3, replaceWith = ObjectDestination1, inclusive = true) }
+        assertFailsWith<IllegalStateException> {
+            runNavigator { popUpTo(ObjectDestination1, replaceWith = ObjectDestination2) }
+        }
+        assertFailsWith<IllegalStateException> {
+            runNavigator { popUpTo(instanceDestination3, replaceWith = ObjectDestination1, inclusive = true) }
+        }
 
         runNavigator { popUpTo(instanceDestination2, replaceWith = instanceDestination3) }
         instanceDestination1.expectLastIndexInBackStack(1)
@@ -299,8 +312,12 @@ abstract class CommonNavigationTest(
         expectDestination(ObjectDestination2) { navigateTo(it) }
 
         // Pop up to non existing destination
-        runNavigator { popUpTo(ObjectDestination1::class, replaceWith = ObjectDestination2) }
-        runNavigator { popUpTo(ObjectDestination1::class, replaceWith = ObjectDestination1, inclusive = true) }
+        assertFailsWith<IllegalStateException> {
+            runNavigator { popUpTo(ObjectDestination1::class, replaceWith = ObjectDestination2) }
+        }
+        assertFailsWith<IllegalStateException> {
+            runNavigator { popUpTo(ObjectDestination1::class, replaceWith = ObjectDestination1, inclusive = true) }
+        }
 
         runNavigator { popUpTo(InstanceDestination::class, replaceWith = instanceDestination3) }
         instanceDestination1.expectLastIndexInBackStack(1)

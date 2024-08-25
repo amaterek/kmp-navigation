@@ -57,6 +57,7 @@ abstract class BaseNavigator(
         }
 
         is ControlDestination.PopUpTo -> {
+            destination.requireInBackstack()
             doPopUpTo(destination)
             setResult(result)
         }
@@ -93,6 +94,16 @@ abstract class BaseNavigator(
         ) ?: noParentNavigatorError(destination)
     }
 
+    private fun ControlDestination.PopUpTo.requireInBackstack() = when (this) {
+        is ControlDestination.PopUpTo.DestinationInstance ->
+            if (backStack.lastIndexOf(destination) < 0) destinationIsNotInBackStack(destination::class) else Unit
+
+        is ControlDestination.PopUpTo.DestinationClass ->
+            if (backStack.lastIndexOf(destination) < 0) destinationIsNotInBackStack(destination) else Unit
+
+        else -> Unit
+    }
+
     @Suppress("MemberVisibilityCanBePrivate")
     protected fun noParentNavigatorError(destination: Destination): Nothing =
         error("No parent navigator for: $destination")
@@ -108,6 +119,9 @@ abstract class BaseNavigator(
     @Suppress("MemberVisibilityCanBePrivate")
     protected fun destinationIsNotSupportedForWithResultError(destination: Destination): Nothing =
         invalidDestinationForResultError(destination)
+
+    private fun destinationIsNotInBackStack(destination: GraphDestination): Nothing =
+        error("Requested destination is not in backstack: $destination")
 
     protected abstract fun doNavigateBack()
 

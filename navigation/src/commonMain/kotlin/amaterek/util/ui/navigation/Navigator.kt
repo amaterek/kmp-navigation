@@ -30,5 +30,9 @@ interface Navigator {
     @InternalNavigation
     fun setResult(result: Any?)
 
+    /** Navigates to the destination
+     *
+     * @throws IllegalStateException if pop up to destination is not in back stack.
+     */
     fun navigateTo(destination: Destination)
 }
