@@ -15,7 +15,7 @@ data object PreviousDestination : Destination
 @Suppress("FunctionName")
 @Stable
 fun PopUpToDestination(destination: ScreenDestination, inclusive: Boolean = false): Destination =
-    ControlDestination.PopUpTo.DestinationInstance(
+    NavigatorDestination.PopUpTo.DestinationInstance(
         destination = destination,
         inclusive = inclusive,
         replaceWith = null,
@@ -24,7 +24,7 @@ fun PopUpToDestination(destination: ScreenDestination, inclusive: Boolean = fals
 @Suppress("FunctionName", "NOTHING_TO_INLINE")
 @Stable
 inline fun PopUpToDestination(destination: GraphDestination, inclusive: Boolean = false): Destination =
-    ControlDestination.PopUpTo.DestinationClass(
+    NavigatorDestination.PopUpTo.DestinationClass(
         destination = destination,
         inclusive = inclusive,
         replaceWith = null,
@@ -33,18 +33,18 @@ inline fun PopUpToDestination(destination: GraphDestination, inclusive: Boolean 
 @Suppress("FunctionName", "NOTHING_TO_INLINE")
 @Stable
 inline fun PopUpToFirstDestination(): Destination =
-    ControlDestination.PopUpTo.FirstDestination(
+    NavigatorDestination.PopUpTo.FirstDestination(
         inclusive = false,
         replaceWith = null,
     )
 
 @Immutable
-sealed interface ControlDestination : Destination {
+sealed interface NavigatorDestination : Destination {
 
-    data class WithResult(val destination: Destination, val result: Any) : ControlDestination
+    data class WithResult(val destination: Destination, val result: Any) : NavigatorDestination
 
     @Immutable
-    sealed interface PopUpTo : ControlDestination {
+    sealed interface PopUpTo : NavigatorDestination {
 
         val inclusive: Boolean
         val replaceWith: ScreenDestination?
@@ -75,7 +75,7 @@ sealed interface ControlDestination : Destination {
     data class RedirectToParent(
         val destination: Destination,
         val strategy: RedirectToParentStrategy,
-    ) : ControlDestination
+    ) : NavigatorDestination
 }
 
 @Immutable

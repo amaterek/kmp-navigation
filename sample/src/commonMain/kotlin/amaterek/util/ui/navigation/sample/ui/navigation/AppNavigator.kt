@@ -2,9 +2,9 @@ package amaterek.util.ui.navigation.sample.ui.navigation
 
 import amaterek.util.ui.navigation.Navigator
 import amaterek.util.ui.navigation.annotation.InternalNavigation
-import amaterek.util.ui.navigation.destination.ControlDestination
 import amaterek.util.ui.navigation.destination.Destination
 import amaterek.util.ui.navigation.destination.DialogDestination
+import amaterek.util.ui.navigation.destination.NavigatorDestination
 import amaterek.util.ui.navigation.destination.PreviousDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.sample.ui.navigation.finishappdialog.AppFinishDialogDestination
@@ -37,12 +37,12 @@ class AppNavigator(
     override fun setResult(result: Any?) = notSupported()
 
     override fun navigateTo(destination: Destination) = when (destination) {
-        is PreviousDestination, is ControlDestination.WithResult -> {
+        is PreviousDestination, is NavigatorDestination.WithResult -> {
             when {
                 appDialogState.value != null -> {
                     appDialogState.value = null
                 }
-                destination is ControlDestination.WithResult -> {
+                destination is NavigatorDestination.WithResult -> {
                     when (val result = destination.result) {
                         is AppFinishDialogIsCancelable ->
                             appDialogState.value = AppFinishDialogDestination(result)
@@ -53,7 +53,7 @@ class AppNavigator(
             }
         }
         is AppLinkDestination -> platformNavigation.openLink(destination.link)
-        is ControlDestination.RedirectToParent -> {
+        is NavigatorDestination.RedirectToParent -> {
             when (val targetDestination = destination.destination) {
                 is AppLinkDestination -> platformNavigation.openLink(targetDestination.link)
                 else -> error("Unsupported destination: $targetDestination")

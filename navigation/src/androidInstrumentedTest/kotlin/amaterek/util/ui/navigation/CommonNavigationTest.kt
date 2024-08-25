@@ -3,8 +3,8 @@ package amaterek.util.ui.navigation
 import amaterek.util.ui.navigation.common.InstanceDestination
 import amaterek.util.ui.navigation.common.ObjectDestination1
 import amaterek.util.ui.navigation.common.ObjectDestination2
-import amaterek.util.ui.navigation.destination.ControlDestination
 import amaterek.util.ui.navigation.destination.GraphDestination
+import amaterek.util.ui.navigation.destination.NavigatorDestination
 import amaterek.util.ui.navigation.destination.PreviousDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import androidx.compose.runtime.Composable
@@ -87,7 +87,7 @@ abstract class CommonNavigationTest(
         val result = "to parent result"
         assertNull(parentNavigator.lastDestination)
         runNavigator { navigateBackWithResult(result) }
-        assertEquals(ControlDestination.WithResult(PreviousDestination, result), parentNavigator.lastDestination)
+        assertEquals(NavigatorDestination.WithResult(PreviousDestination, result), parentNavigator.lastDestination)
 
         parentNavigator.reset()
     }

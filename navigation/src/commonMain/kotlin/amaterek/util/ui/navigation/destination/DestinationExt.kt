@@ -3,31 +3,31 @@ package amaterek.util.ui.navigation.destination
 import androidx.compose.runtime.Stable
 
 @Stable
-fun PreviousDestination.withResult(result: Any): ControlDestination =
-    ControlDestination.WithResult(destination = this, result = result)
+fun PreviousDestination.withResult(result: Any): NavigatorDestination =
+    NavigatorDestination.WithResult(destination = this, result = result)
 
 @Stable
-fun Destination.withResult(result: Any): ControlDestination =
-    ControlDestination.WithResult(destination = this, result = result)
+fun Destination.withResult(result: Any): NavigatorDestination =
+    NavigatorDestination.WithResult(destination = this, result = result)
 
 @Stable
-fun ScreenDestination.replace(): ControlDestination =
-    ControlDestination.PopUpTo.CurrentDestination(inclusive = true, replaceWith = this)
+fun ScreenDestination.replace(): NavigatorDestination =
+    NavigatorDestination.PopUpTo.CurrentDestination(inclusive = true, replaceWith = this)
 
 @Stable
-fun ScreenDestination.replaceAll(): ControlDestination =
-    ControlDestination.PopUpTo.FirstDestination(inclusive = true, replaceWith = this)
+fun ScreenDestination.replaceAll(): NavigatorDestination =
+    NavigatorDestination.PopUpTo.FirstDestination(inclusive = true, replaceWith = this)
 
 @Stable
-fun ScreenDestination.popUpToFirst(): ControlDestination =
-    ControlDestination.PopUpTo.FirstDestination(inclusive = false, replaceWith = this)
+fun ScreenDestination.popUpToFirst(): NavigatorDestination =
+    NavigatorDestination.PopUpTo.FirstDestination(inclusive = false, replaceWith = this)
 
 @Stable
 fun ScreenDestination.popUpTo(
     destination: ScreenDestination,
     inclusive: Boolean = false,
-): ControlDestination =
-    ControlDestination.PopUpTo.DestinationInstance(
+): NavigatorDestination =
+    NavigatorDestination.PopUpTo.DestinationInstance(
         destination = destination,
         inclusive = inclusive,
         replaceWith = this,
@@ -37,8 +37,8 @@ fun ScreenDestination.popUpTo(
 fun ScreenDestination.popUpTo(
     destination: GraphDestination,
     inclusive: Boolean = false,
-): ControlDestination =
-    ControlDestination.PopUpTo.DestinationClass(
+): NavigatorDestination =
+    NavigatorDestination.PopUpTo.DestinationClass(
         destination = destination,
         inclusive = inclusive,
         replaceWith = this,
@@ -46,14 +46,14 @@ fun ScreenDestination.popUpTo(
 
 @Stable
 fun Destination.redirectToParentIfNotInGraph(): Destination =
-    ControlDestination.RedirectToParent(
+    NavigatorDestination.RedirectToParent(
         destination = this,
         strategy = RedirectToParentStrategy.IfNotInCurrentGraph,
     )
 
 @Stable
 fun Destination.redirectToParent(deep: Int = 1): Destination =
-    ControlDestination.RedirectToParent(
+    NavigatorDestination.RedirectToParent(
         destination = this,
         strategy = RedirectToParentStrategy.Deep(deep),
     )

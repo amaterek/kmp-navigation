@@ -3,9 +3,9 @@
 package amaterek.util.ui.navigation
 
 import amaterek.util.ui.navigation.annotation.InternalNavigation
-import amaterek.util.ui.navigation.destination.ControlDestination.*
 import amaterek.util.ui.navigation.destination.Destination
 import amaterek.util.ui.navigation.destination.GraphDestination
+import amaterek.util.ui.navigation.destination.NavigatorDestination.*
 import amaterek.util.ui.navigation.destination.PreviousDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import io.mockk.*

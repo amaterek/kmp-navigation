@@ -4,8 +4,8 @@ package amaterek.util.ui.navigation.jetpack
 
 import amaterek.util.ui.navigation.Navigator
 import amaterek.util.ui.navigation.annotation.InternalNavigation
-import amaterek.util.ui.navigation.destination.ControlDestination
 import amaterek.util.ui.navigation.destination.GraphDestination
+import amaterek.util.ui.navigation.destination.NavigatorDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.internal.BaseNavigator
 import android.annotation.SuppressLint
@@ -112,20 +112,20 @@ class JetpackNavigator(
         navHostController.popBackStack()
     }
 
-    override fun doPopUpTo(popUpTo: ControlDestination.PopUpTo) {
+    override fun doPopUpTo(popUpTo: NavigatorDestination.PopUpTo) {
         when (popUpTo) {
-            is ControlDestination.PopUpTo.FirstDestination ->
+            is NavigatorDestination.PopUpTo.FirstDestination ->
                 doPopUpToFirst(popUpTo.inclusive, popUpTo.replaceWith)
 
-            is ControlDestination.PopUpTo.CurrentDestination -> {
+            is NavigatorDestination.PopUpTo.CurrentDestination -> {
                 val destinationClass = backStack.currentDestinationFlow.value::class
                 doPopUpTo(destinationClass, popUpTo.inclusive, popUpTo.replaceWith)
             }
 
-            is ControlDestination.PopUpTo.DestinationInstance ->
+            is NavigatorDestination.PopUpTo.DestinationInstance ->
                 doPopUpTo(popUpTo.destination, popUpTo.inclusive, popUpTo.replaceWith)
 
-            is ControlDestination.PopUpTo.DestinationClass ->
+            is NavigatorDestination.PopUpTo.DestinationClass ->
                 doPopUpTo(popUpTo.destination, popUpTo.inclusive, popUpTo.replaceWith)
         }
     }
