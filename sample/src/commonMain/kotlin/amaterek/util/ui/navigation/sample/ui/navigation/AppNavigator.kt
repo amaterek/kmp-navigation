@@ -31,7 +31,7 @@ class AppNavigator(
     }
 
     @InternalNavigation
-    override fun getResultFlowForDestination(destination: ScreenDestination): Flow<Any?> = notSupported()
+    override fun getResultFlow(destination: ScreenDestination): Flow<Any?> = notSupported()
 
     @InternalNavigation
     override fun setResult(result: Any?) = notSupported()

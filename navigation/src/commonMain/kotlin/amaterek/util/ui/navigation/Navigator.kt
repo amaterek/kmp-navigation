@@ -25,8 +25,9 @@ interface Navigator {
     val backStack: BackStack
 
     @InternalNavigation
-    fun getResultFlowForDestination(destination: ScreenDestination): Flow<Any?>
+    fun getResultFlow(destination: ScreenDestination): Flow<Any?>
 
+    @InternalNavigation
     fun setResult(result: Any?)
 
     fun navigateTo(destination: Destination)

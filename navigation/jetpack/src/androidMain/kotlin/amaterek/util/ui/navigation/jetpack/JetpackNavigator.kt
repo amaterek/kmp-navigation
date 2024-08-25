@@ -94,7 +94,7 @@ class JetpackNavigator(
 
     override val backStack: Navigator.BackStack = JetpackBackStack()
 
-    override fun getResultFlowForDestination(destination: ScreenDestination): Flow<Any?> {
+    override fun getResultFlow(destination: ScreenDestination): Flow<Any?> {
         // FIXME Get proper backstack entry
         val currentBackStackEntry = requireNotNull(navHostController.currentBackStackEntry)
         val savedStateHandle = currentBackStackEntry.savedStateHandle

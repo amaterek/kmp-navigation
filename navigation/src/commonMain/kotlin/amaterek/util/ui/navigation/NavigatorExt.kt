@@ -17,6 +17,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.onEach
 
 inline fun Navigator.canNavigateBack() =
     backStack.size > 1
@@ -94,4 +96,6 @@ inline val Navigator.currentDestinationFlow: StateFlow<ScreenDestination>
 inline val Navigator.resultFlow: Flow<Any?>
     @ReadOnlyComposable
     @Composable
-    get() = getResultFlowForDestination(LocalDestination.current)
+    get() = getResultFlow(LocalDestination.current)
+        .filterNotNull()
+        .onEach { setResult(null) }

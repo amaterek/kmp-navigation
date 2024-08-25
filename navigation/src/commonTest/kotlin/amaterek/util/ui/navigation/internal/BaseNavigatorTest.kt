@@ -83,7 +83,7 @@ class TestBaseNavigator(
         get() = requireMockError()
 
     @InternalNavigation
-    override fun getResultFlowForDestination(destination: ScreenDestination): Flow<Any?> {
+    override fun getResultFlow(destination: ScreenDestination): Flow<Any?> {
         requireMockError()
     }
 

@@ -82,7 +82,6 @@ internal fun RootMainScreen() {
         navigationResultFlow
             .onEach {
                 Log.i("MainScreen", "redirect result from parent navigator to main: result=$it")
-                mainNavigator.setResult(it)
             }
             .launchIn(this)
     }

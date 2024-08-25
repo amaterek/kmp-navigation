@@ -106,10 +106,11 @@ abstract class BaseNavigationTest(
             get() = error("Not supported")
 
         @InternalNavigation
-        override fun getResultFlowForDestination(destination: ScreenDestination): Flow<Any?> {
+        override fun getResultFlow(destination: ScreenDestination): Flow<Any?> {
             error("Not supported")
         }
 
+        @InternalNavigation
         override fun setResult(result: Any?) {
             error("Not supported")
         }

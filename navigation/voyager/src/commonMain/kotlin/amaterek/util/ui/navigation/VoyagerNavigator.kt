@@ -51,7 +51,7 @@ class VoyagerNavigator internal constructor(
 
     override val backStack: Navigator.BackStack = VoyagerBackStack()
 
-    override fun getResultFlowForDestination(destination: ScreenDestination): Flow<Any?> {
+    override fun getResultFlow(destination: ScreenDestination): Flow<Any?> {
         val item = navHostController?.items?.lastOrNull { (it as VoyagerBackStackEntry).destination == destination }
         return (item as? VoyagerBackStackEntry)?.resultFlow ?: emptyFlow()
     }
