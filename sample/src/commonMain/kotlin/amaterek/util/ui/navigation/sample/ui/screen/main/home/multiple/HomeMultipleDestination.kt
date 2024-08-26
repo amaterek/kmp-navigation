@@ -1,11 +1,13 @@
 package amaterek.util.ui.navigation.sample.ui.screen.main.home.multiple
 
 import amaterek.util.ui.navigation.destination.ScreenDestination
+import amaterek.util.ui.navigation.serialization.Serialize
 import amaterek.util.ui.navigation.transition.ScreenTransition
 import amaterek.util.ui.navigation.transition.ScreenTransitionProvider
 import amaterek.util.ui.navigation.transition.SlideHorizontallyScreenTransition
 import androidx.compose.runtime.Composable
 
+@Serialize
 data class HomeMultipleDestination(
     private val level: Int,
 ) : ScreenDestination, ScreenTransitionProvider {

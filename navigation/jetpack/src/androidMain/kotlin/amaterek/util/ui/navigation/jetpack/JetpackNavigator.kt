@@ -10,6 +10,9 @@ import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.internal.BaseNavigator
 import amaterek.util.ui.navigation.transition.ScreenTransition
 import android.annotation.SuppressLint
+import android.os.Build
+import android.os.Bundle
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavOptionsBuilder
@@ -69,19 +72,21 @@ class JetpackNavigator(
 
         override fun lastIndexOf(destination: ScreenDestination): Int {
             if (destination::class.objectInstance != null) return lastIndexOf(destination::class)
-            val baseRoute = destination.baseRoute
-            val argument = destination.argument?.let { "{$it}" }
+            val route = destination.route
             return navHostController.currentBackStack.value
-                .indexOfLast { it.destination.route == baseRoute && it.arguments?.getString(ArgumentsName) == argument }
+                .indexOfLast { it.destination.route == route && destination.isMatching(it) }
                 .let { if (it >= 0) it - 1 else it }
         }
 
         override fun lastIndexOf(destination: GraphDestination): Int {
-            val baseRoute = destination.baseRoute
+            val route = destination.route
             return navHostController.currentBackStack.value
-                .indexOfLast { it.destination.route == baseRoute }
+                .indexOfLast { it.destination.route == route }
                 .let { if (it >= 0) it - 1 else it }
         }
+
+        private inline fun ScreenDestination.isMatching(navBackStackEntry: NavBackStackEntry): Boolean =
+            if (this::class.objectInstance != null) true else this == navBackStackEntry.getArgument(ArgumentsName)
 
         private fun purgeScreenDestinationsMap() {
             val backStack = navHostController.currentBackStack.value
@@ -95,6 +100,7 @@ class JetpackNavigator(
         }
     }
 
+    @Suppress("ClassOrdering")
     override val backStack: Navigator.BackStack = JetpackBackStack()
 
     override fun getResultFlow(destination: ScreenDestination): Flow<Any?> {
@@ -161,13 +167,13 @@ class JetpackNavigator(
     private fun doPopUpTo(destination: GraphDestination, inclusive: Boolean, replaceWith: ScreenDestination?) {
         if (replaceWith != null) {
             navHostController.navigate(replaceWith) {
-                popUpTo(route = destination.baseRoute) {
+                popUpTo(route = destination.route) {
                     this.inclusive = inclusive
                 }
             }
         } else {
             navHostController.popBackStack(
-                route = destination.baseRoute,
+                route = destination.route,
                 inclusive = inclusive,
             )
         }
@@ -182,7 +188,30 @@ private inline fun NavController.navigate(
     destination: ScreenDestination,
     noinline builder: (NavOptionsBuilder.() -> Unit)? = null,
 ) {
-    navigate(destination.route, builder?.let { navOptions(it) })
+    val navOptions = builder?.let { navOptions(it) }
+    if (destination::class.objectInstance == null) {
+        val nodeId = graph.findNode(route = destination.route)?.id!!
+        navigate(
+            nodeId,
+            Bundle().apply { putParcelable(ArgumentsName, destination) },
+            navOptions,
+            null,
+        )
+    } else {
+        navigate(destination.route, navOptions)
+    }
 }
 
+internal inline fun <reified T> NavBackStackEntry.getArgument(name: String): T =
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        arguments?.getParcelable(name, T::class.java)!!
+    } else {
+        @Suppress("DEPRECATION")
+        arguments?.get(name) as T
+    }
+
+@Suppress("TopLevelPropertyNaming")
 private const val ResultFlowKey = "navigation_result"
+
+@Suppress("TopLevelPropertyNaming")
+internal const val ArgumentsName = "destination"

@@ -8,4 +8,7 @@ import java.io.Serializable
 actual interface Serializable : Serializable
 
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
+actual typealias Serialize = DummyAnnotation
+
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual typealias SkipForSerialization = Transient

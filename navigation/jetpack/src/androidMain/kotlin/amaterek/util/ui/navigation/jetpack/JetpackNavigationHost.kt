@@ -77,7 +77,7 @@ private fun NavGraphBuilder.addDestination(
     defaultTransition: ScreenTransition,
 ) {
     @Suppress("UNCHECKED_CAST")
-    val destinationRoute = (destinationClass as KClass<ScreenDestination>).baseRoute
+    val destinationRoute = (destinationClass as KClass<ScreenDestination>).route
     when {
         destinationClass.isSubclassOf(DialogDestination::class) -> {
             @Suppress("UNCHECKED_CAST")
@@ -133,8 +133,8 @@ private inline fun DestinationContent(
 }
 
 @Stable
-private inline fun KClass<out ScreenDestination>.destination(navBackStackEntry: NavBackStackEntry): ScreenDestination =
-    objectInstance ?: navBackStackEntry.arguments!!.getString(ArgumentsName)!!.deserializeDestination()
+private fun KClass<out ScreenDestination>.destination(navBackStackEntry: NavBackStackEntry): ScreenDestination =
+    objectInstance ?: navBackStackEntry.getArgument(ArgumentsName)
 
 @Stable
 private fun KClass<out DialogDestination>.getDialogProperties(): DialogProperties? {
