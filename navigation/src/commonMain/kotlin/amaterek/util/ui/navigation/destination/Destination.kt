@@ -1,6 +1,5 @@
 package amaterek.util.ui.navigation.destination
 
-import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlin.reflect.KClass
 
@@ -18,5 +17,9 @@ typealias GraphDestination = KClass<out ScreenDestination>
 /**
  * Predefined previous destination to navigate back.
  */
-@Immutable
 data object PreviousDestination : Destination
+
+/**
+ * Predefined previous destination to navigate back with result.
+ */
+data class PreviousDestinationWithResult(val result: Any) : Destination

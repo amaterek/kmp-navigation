@@ -8,11 +8,10 @@ import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.NavigatorDestination
 import amaterek.util.ui.navigation.destination.NavigatorDestination.PopUpTo
 import amaterek.util.ui.navigation.destination.NavigatorDestination.RedirectToParent
-import amaterek.util.ui.navigation.destination.NavigatorDestination.WithResult
 import amaterek.util.ui.navigation.destination.PreviousDestination
+import amaterek.util.ui.navigation.destination.PreviousDestinationWithResult
 import amaterek.util.ui.navigation.destination.RedirectToParentStrategy
 import amaterek.util.ui.navigation.destination.ScreenDestination
-import amaterek.util.ui.navigation.destination.withResult
 
 @Suppress("TooManyFunctions")
 @InternalNavigation
@@ -22,36 +21,25 @@ abstract class BaseNavigator(
 ) : Navigator {
 
     override fun navigateTo(destination: Destination) {
-        doNavigateTo(destination, result = null)
-    }
-
-    private fun doNavigateTo(destination: Destination, result: Any?) {
         when (destination) {
-            PreviousDestination -> navigateToPreviousDestination(result)
-            is NavigatorDestination -> handleControlDestination(destination, result)
+            PreviousDestination -> navigateToPreviousDestination(result = null)
+            is PreviousDestinationWithResult -> navigateToPreviousDestination(result = destination.result)
+            is NavigatorDestination -> handleNavigatorDestination(destination)
             else -> destinationIsNotSupportedError(destination)
         }
     }
 
     @Suppress("CyclomaticComplexMethod", "NestedBlockDepth")
-    private fun handleControlDestination(destination: NavigatorDestination, result: Any?) = when (destination) {
+    private fun handleNavigatorDestination(destination: NavigatorDestination) = when (destination) {
         is ScreenDestination ->
             if (graph.contains(destination::class)) {
                 doPush(destination)
             } else destinationNotFoundInGraphError(destination)
 
-        is WithResult -> {
-            when (val target = destination.destination) {
-                PreviousDestination -> doNavigateTo(target, destination.result)
-                is PopUpTo -> doNavigateTo(target, destination.result)
-                else -> destinationIsNotSupportedForWithResultError(destination.destination)
-            }
-        }
-
         is PopUpTo -> {
             destination.requireInBackstack()
             doPopUpTo(destination)
-            setResult(result)
+            destination.result?.let { setResult(it) }
         }
 
         is RedirectToParent -> parent?.let {
@@ -83,14 +71,14 @@ abstract class BaseNavigator(
     private fun navigateToPreviousDestination(result: Any?) {
         if (canNavigateBack()) {
             doNavigateBack()
-            result?.let { setResult(result) }
-        } else redirectToParent(PreviousDestination, result)
+            result?.let { setResult(it) }
+        } else {
+            redirectToParent(result?.let { PreviousDestinationWithResult(it) } ?: PreviousDestination)
+        }
     }
 
-    private fun redirectToParent(destination: Destination, result: Any?) {
-        parent?.navigateTo(
-            result?.let { destination.withResult(result) } ?: destination,
-        ) ?: noParentNavigatorError(destination)
+    private fun redirectToParent(destination: Destination) {
+        parent?.navigateTo(destination) ?: noParentNavigatorError(destination)
     }
 
     private fun PopUpTo.requireInBackstack() = when (this) {
@@ -114,10 +102,6 @@ abstract class BaseNavigator(
     @Suppress("MemberVisibilityCanBePrivate")
     protected fun destinationIsNotSupportedError(destination: Destination): Nothing =
         error("Requested not supported destination: $destination")
-
-    @Suppress("MemberVisibilityCanBePrivate")
-    protected fun destinationIsNotSupportedForWithResultError(destination: Destination): Nothing =
-        error("Requested not supported destination for result: $destination")
 
     private fun destinationIsNotInBackStack(destination: GraphDestination): Nothing =
         error("Requested destination is not in backstack: $destination")

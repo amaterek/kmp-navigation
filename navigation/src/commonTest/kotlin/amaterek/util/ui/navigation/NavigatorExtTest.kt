@@ -7,6 +7,7 @@ import amaterek.util.ui.navigation.destination.Destination
 import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.NavigatorDestination.*
 import amaterek.util.ui.navigation.destination.PreviousDestination
+import amaterek.util.ui.navigation.destination.PreviousDestinationWithResult
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import io.mockk.*
 import kotlin.random.Random
@@ -57,7 +58,7 @@ class NavigatorExtTest {
         val result = mockk<Any>()
         test(
             on = { navigateBackWithResult(result) },
-            expect = WithResult(PreviousDestination, result),
+            expect = PreviousDestinationWithResult(result),
         )
     }
 
@@ -66,7 +67,7 @@ class NavigatorExtTest {
         val destination = mockk<ScreenDestination>()
         test(
             on = { replace(destination) },
-            expect = PopUpTo.CurrentDestination(inclusive = true, replaceWith = destination),
+            expect = PopUpTo.CurrentDestination(inclusive = true, replaceWith = destination, result = null),
         )
     }
 
@@ -75,7 +76,7 @@ class NavigatorExtTest {
         val destination = mockk<ScreenDestination>()
         test(
             on = { replaceAll(destination) },
-            expect = PopUpTo.FirstDestination(inclusive = true, replaceWith = destination),
+            expect = PopUpTo.FirstDestination(inclusive = true, replaceWith = destination, result = null),
         )
     }
 
@@ -84,7 +85,7 @@ class NavigatorExtTest {
     fun WHEN_popUpToFirst_is_called_THEN_navigates_to_WithResult_control_destination() {
         test(
             on = { popUpToFirst() },
-            expect = PopUpTo.FirstDestination(inclusive = false, replaceWith = null),
+            expect = PopUpTo.FirstDestination(inclusive = false, replaceWith = null, result = null),
         )
     }
 
@@ -93,10 +94,7 @@ class NavigatorExtTest {
         val result = mockk<Any>()
         test(
             on = { popUpToFirstWithResult(result) },
-            expect = WithResult(
-                destination = PopUpTo.FirstDestination(inclusive = false, replaceWith = null),
-                result = result,
-            )
+            expect = PopUpTo.FirstDestination(inclusive = false, replaceWith = null, result = result),
         )
     }
 
@@ -106,7 +104,7 @@ class NavigatorExtTest {
         val inclusive = Random.nextBoolean()
         test(
             on = { popUpTo(destination, inclusive = inclusive) },
-            expect = PopUpTo.DestinationClass(destination = destination, inclusive = inclusive, replaceWith = null),
+            expect = PopUpTo.DestinationClass(destination = destination, inclusive = inclusive, replaceWith = null, result = null),
         )
     }
 
@@ -116,7 +114,7 @@ class NavigatorExtTest {
         val inclusive = Random.nextBoolean()
         test(
             on = { popUpTo(destination, inclusive = inclusive) },
-            expect = PopUpTo.DestinationInstance(destination = destination, inclusive = inclusive, replaceWith = null),
+            expect = PopUpTo.DestinationInstance(destination = destination, inclusive = inclusive, replaceWith = null, result = null),
         )
     }
 
@@ -127,10 +125,7 @@ class NavigatorExtTest {
         val inclusive = Random.nextBoolean()
         test(
             on = { popUpToWithResult(destination, result, inclusive = inclusive) },
-            expect = WithResult(
-                destination = PopUpTo.DestinationClass(destination = destination, inclusive = inclusive, replaceWith = null),
-                result = result,
-            ),
+            expect = PopUpTo.DestinationClass(destination = destination, inclusive = inclusive, replaceWith = null, result = result),
         )
     }
 
@@ -141,10 +136,7 @@ class NavigatorExtTest {
         val inclusive = Random.nextBoolean()
         test(
             on = { popUpToWithResult(destination, result, inclusive = inclusive) },
-            expect = WithResult(
-                destination = PopUpTo.DestinationInstance(destination = destination, inclusive = inclusive, replaceWith = null),
-                result = result,
-            ),
+            expect = PopUpTo.DestinationInstance(destination = destination, inclusive = inclusive, replaceWith = null, result = result),
         )
     }
 

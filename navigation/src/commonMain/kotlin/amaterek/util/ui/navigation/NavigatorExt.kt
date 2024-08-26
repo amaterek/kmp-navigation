@@ -36,7 +36,7 @@ inline fun Navigator.replaceAll(destination: ScreenDestination) =
     navigateTo(destination.replaceAll())
 
 inline fun Navigator.popUpToFirst(replaceWith: ScreenDestination? = null) =
-    replaceWith?.let { it.popUpToFirst() } ?: navigateTo(PopUpToFirstDestination())
+    replaceWith?.popUpToFirst() ?: navigateTo(PopUpToFirstDestination())
 
 inline fun Navigator.popUpToFirstWithResult(result: Any) =
     navigateTo(PopUpToFirstDestination().withResult(result))

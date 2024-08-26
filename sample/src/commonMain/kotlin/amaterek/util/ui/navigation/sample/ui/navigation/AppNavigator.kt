@@ -6,6 +6,7 @@ import amaterek.util.ui.navigation.destination.Destination
 import amaterek.util.ui.navigation.destination.DialogDestination
 import amaterek.util.ui.navigation.destination.NavigatorDestination
 import amaterek.util.ui.navigation.destination.PreviousDestination
+import amaterek.util.ui.navigation.destination.PreviousDestinationWithResult
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.sample.ui.navigation.finishappdialog.AppFinishDialogDestination
 import amaterek.util.ui.navigation.sample.ui.navigation.finishappdialog.AppFinishDialogIsCancelable
@@ -37,12 +38,12 @@ class AppNavigator(
     override fun setResult(result: Any?) = notSupported()
 
     override fun navigateTo(destination: Destination) = when (destination) {
-        is PreviousDestination, is NavigatorDestination.WithResult -> {
+        is PreviousDestination, is PreviousDestinationWithResult -> {
             when {
                 appDialogState.value != null -> {
                     appDialogState.value = null
                 }
-                destination is NavigatorDestination.WithResult -> {
+                destination is PreviousDestinationWithResult -> {
                     when (val result = destination.result) {
                         is AppFinishDialogIsCancelable ->
                             appDialogState.value = AppFinishDialogDestination(result)
