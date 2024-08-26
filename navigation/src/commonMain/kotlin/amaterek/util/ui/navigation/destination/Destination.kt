@@ -4,10 +4,19 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
 import kotlin.reflect.KClass
 
+/**
+ * The base interface of the destination. Can be used to define custom destinations for custom navigators.
+ */
 @Stable
 interface Destination
 
+/**
+ * The type of graph's destination.
+ */
 typealias GraphDestination = KClass<out ScreenDestination>
 
+/**
+ * Predefined previous destination to navigate back.
+ */
 @Immutable
 data object PreviousDestination : Destination
