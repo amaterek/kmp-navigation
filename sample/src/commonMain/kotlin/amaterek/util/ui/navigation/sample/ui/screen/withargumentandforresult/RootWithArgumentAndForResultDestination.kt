@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
 
 data class RootWithArgumentAndForResultDestination(
     private val text: String,
-) : ScreenDestination {
+) : ScreenDestination, ScreenTransitionProvider {
 
     override val transition: ScreenTransition
         get() = Companion.transition

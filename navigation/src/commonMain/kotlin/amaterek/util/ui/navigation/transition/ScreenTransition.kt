@@ -25,7 +25,6 @@ data class ScreenTransition(
 interface ScreenTransitionProvider {
 
     val transition: ScreenTransition
-        get() = NoneScreenTransition
 }
 
 private const val TransitionDurationMillis = 300

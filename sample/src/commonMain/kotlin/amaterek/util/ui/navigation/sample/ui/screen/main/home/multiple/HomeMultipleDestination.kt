@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 
 data class HomeMultipleDestination(
     private val level: Int,
-) : ScreenDestination {
+) : ScreenDestination, ScreenTransitionProvider {
 
     override val transition: ScreenTransition
         get() = Companion.transition

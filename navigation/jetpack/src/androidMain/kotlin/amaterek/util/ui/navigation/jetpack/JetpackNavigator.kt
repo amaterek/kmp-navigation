@@ -8,6 +8,7 @@ import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.NavigatorDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.internal.BaseNavigator
+import amaterek.util.ui.navigation.transition.ScreenTransition
 import android.annotation.SuppressLint
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -31,6 +32,7 @@ class JetpackNavigator(
     internal val graph: Set<GraphDestination>,
     private val coroutineScope: CoroutineScope,
     parent: Navigator?,
+    internal val defaultTransition: ScreenTransition,
 ) : BaseNavigator(graph, parent) {
 
     private val screenDestinationsMap = mutableMapOf<String, ScreenDestination>()

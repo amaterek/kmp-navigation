@@ -8,6 +8,7 @@ import amaterek.util.ui.navigation.destination.NavigatorDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.internal.BaseNavigator
 import amaterek.util.ui.navigation.serialization.SkipForSerialization
+import amaterek.util.ui.navigation.transition.ScreenTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import cafe.adriel.voyager.core.screen.Screen
@@ -28,6 +29,7 @@ class VoyagerNavigator internal constructor(
     internal val startBackStack: List<ScreenDestination>,
     graph: Set<GraphDestination>,
     parent: Navigator?,
+    internal val defaultTransition: ScreenTransition,
 ) : BaseNavigator(graph, parent) {
 
     // HACK Nullable: For Voyager - navigator is available later

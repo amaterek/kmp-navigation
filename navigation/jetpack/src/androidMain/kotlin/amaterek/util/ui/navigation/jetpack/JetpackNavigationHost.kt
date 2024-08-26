@@ -11,6 +11,7 @@ import amaterek.util.ui.navigation.destination.DialogDestination
 import amaterek.util.ui.navigation.destination.DialogPropertiesProvider
 import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
+import amaterek.util.ui.navigation.transition.FadeScreenTransition
 import amaterek.util.ui.navigation.transition.ScreenTransition
 import amaterek.util.ui.navigation.transition.ScreenTransitionProvider
 import androidx.compose.runtime.Composable
@@ -34,8 +35,9 @@ fun JetpackNavigationHost(
     startDestination: ScreenDestination,
     graph: Set<GraphDestination>,
     parent: Navigator? = null,
+    defaultTransition: ScreenTransition = FadeScreenTransition,
 ) = JetpackNavigationHost(
-    navigator = rememberJetpackNavigator(startDestination, graph, parent) as JetpackNavigator,
+    navigator = rememberJetpackNavigator(startDestination, graph, parent, defaultTransition) as JetpackNavigator,
 )
 
 @Composable
@@ -49,7 +51,7 @@ fun JetpackNavigationHost(
             startDestination = navigator.startDestination.route,
         ) {
             navigator.graph.forEach { destinationClass ->
-                addDestination(navigator, destinationClass)
+                addDestination(navigator, destinationClass, navigator.defaultTransition)
             }
         }
     }
@@ -60,26 +62,28 @@ fun rememberJetpackNavigator(
     startDestination: ScreenDestination,
     graph: Set<GraphDestination>,
     parent: Navigator?,
+    defaultTransition: ScreenTransition = FadeScreenTransition,
 ): Navigator {
     val navController = rememberNavController()
     val coroutineScope = rememberCoroutineScope()
-    return remember { JetpackNavigator(startDestination, navController, graph, coroutineScope, parent) }
+    return remember { JetpackNavigator(startDestination, navController, graph, coroutineScope, parent, defaultTransition) }
 }
 
+@Suppress("BracesOnWhenStatements")
 @Stable
-private fun NavGraphBuilder.addDestination(navigator: JetpackNavigator, destinationClass: KClass<out ScreenDestination>) {
+private fun NavGraphBuilder.addDestination(
+    navigator: JetpackNavigator,
+    destinationClass: KClass<out ScreenDestination>,
+    defaultTransition: ScreenTransition,
+) {
     @Suppress("UNCHECKED_CAST")
     val destinationRoute = (destinationClass as KClass<ScreenDestination>).baseRoute
     when {
         destinationClass.isSubclassOf(DialogDestination::class) -> {
-//            TODO Should transition for dialogs be handled?
-//            if (destinationClass.getTransitions() != NoneScreenTransition) {
-//                 error("Screen transition are not supported for dialogs")
-//            }
             @Suppress("UNCHECKED_CAST")
             dialog(
                 route = destinationRoute,
-                dialogProperties = (destinationClass as KClass<out DialogDestination>).getDialogProperties(),
+                dialogProperties = (destinationClass as KClass<out DialogDestination>).getDialogProperties() ?: DialogProperties(),
                 content = { navBackStackEntry ->
                     DestinationContent(
                         destinationClass = destinationClass,
@@ -89,8 +93,9 @@ private fun NavGraphBuilder.addDestination(navigator: JetpackNavigator, destinat
                 }
             )
         }
+
         else -> {
-            val transitions = destinationClass.getTransitions()
+            val transitions = destinationClass.getTransitions() ?: defaultTransition
             composable(
                 route = destinationRoute,
                 enterTransition = { transitions.enter },
@@ -132,33 +137,19 @@ private inline fun KClass<out ScreenDestination>.destination(navBackStackEntry: 
     objectInstance ?: navBackStackEntry.arguments!!.getString(ArgumentsName)!!.deserializeDestination()
 
 @Stable
-private fun KClass<out DialogDestination>.getDialogProperties(): DialogProperties {
-    objectInstance?.let {
-        return it.dialogProperties
+private fun KClass<out DialogDestination>.getDialogProperties(): DialogProperties? {
+    return objectInstance?.let {
+        (it as? DialogPropertiesProvider)?.dialogProperties
+    } ?: companionObjectInstance?.let {
+        (it as? DialogPropertiesProvider)?.dialogProperties
     }
-    companionObjectInstance?.let {
-        if (it is DialogPropertiesProvider) {
-            return it.dialogProperties
-        } else {
-            dialogDestinationMustImplementDialogPropertiesInObjectError(baseRoute)
-        }
-    } ?: dialogDestinationMustImplementDialogPropertiesInObjectError(baseRoute)
 }
 
 @Stable
-private fun KClass<out ScreenDestination>.getTransitions(): ScreenTransition {
-    objectInstance?.let { return it.transition }
-    companionObjectInstance?.let {
-        if (it is ScreenTransitionProvider) {
-            return it.transition
-        } else {
-            screenDestinationShouldImplementScreenTransitionInObjectWarn(baseRoute)
-        }
-    } ?: screenDestinationShouldImplementScreenTransitionInObjectWarn(baseRoute)
+private fun KClass<out ScreenDestination>.getTransitions(): ScreenTransition? {
+    return objectInstance?.let {
+        (it as? ScreenTransitionProvider)?.transition
+    } ?: companionObjectInstance?.let {
+        (it as? ScreenTransitionProvider)?.transition
+    }
 }
-
-private fun dialogDestinationMustImplementDialogPropertiesInObjectError(route: String): Nothing =
-    error("DialogDestination must implement DialogPropertiesProvider in a companion for non object destinations: route=$route")
-
-private fun screenDestinationShouldImplementScreenTransitionInObjectWarn(route: String): Nothing =
-    error("ScreenDestination must implement ScreenTransitionProvider in a companion for non object destinations: route=$route")
