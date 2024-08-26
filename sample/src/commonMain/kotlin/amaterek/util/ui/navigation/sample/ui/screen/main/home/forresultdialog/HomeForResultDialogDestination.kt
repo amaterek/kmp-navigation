@@ -6,7 +6,7 @@ import amaterek.util.ui.navigation.serialization.Serializable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.window.DialogProperties
 
-data class HomeForResultDialogDestination(val level: Int) : DialogDestination {
+data class HomeForResultDialogDestination(val level: Int) : DialogDestination, DialogPropertiesProvider {
 
     override val dialogProperties: DialogProperties
         get() = Companion.dialogProperties

@@ -4,7 +4,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.window.DialogProperties
 
 @Stable
-interface DialogDestination : ScreenDestination, DialogPropertiesProvider
+interface DialogDestination : ScreenDestination
 
 interface DialogPropertiesProvider {
 
