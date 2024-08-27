@@ -50,13 +50,13 @@ private fun ChooseNavigatorView(
             modifier = Modifier.fillMaxWidth(),
             onClick = { onNavigatorChosen(ChosenNavigator.Multiplatform) },
         ) {
-            Text("Default (Voyager) Navigator")
+            Text("Voyager Navigator")
         }
         Button(
             modifier = Modifier.fillMaxWidth(),
             onClick = { onNavigatorChosen(ChosenNavigator.Android) },
         ) {
-            Text("JetPack (Android) Navigator")
+            Text("JetPack Navigator")
         }
     }
 }

@@ -33,11 +33,8 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(projects.navigation)
-        }
-
-        androidMain.dependencies {
             implementation(compose.runtime)
-            implementation(libs.androidx.navigation.compose)
+            implementation(libs.compose.navigation.compose)
             implementation(libs.kotlin.reflect)
         }
     }
@@ -51,17 +48,12 @@ kotlin {
 
 android {
     namespace = "amaterek.util.ui.navigation"
-
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
 
         consumerProguardFile("consumer-rules.pro")
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
     }
 }
 

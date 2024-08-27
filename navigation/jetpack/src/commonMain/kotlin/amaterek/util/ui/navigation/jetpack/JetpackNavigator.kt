@@ -9,7 +9,6 @@ import amaterek.util.ui.navigation.destination.NavigatorDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.internal.BaseNavigator
 import amaterek.util.ui.navigation.transition.ScreenTransition
-import android.annotation.SuppressLint
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -23,7 +22,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlin.reflect.KClass
 
-@SuppressLint("RestrictedApi")
 @InternalNavigation
 class JetpackNavigator(
     internal val startDestination: ScreenDestination,
@@ -130,7 +128,9 @@ class JetpackNavigator(
             if (replaceWith != null) {
                 repeat(currentBackStack.value.size - 2) { popBackStack() }
                 navigateToScreenDestination(replaceWith) {
-                    popUpTo(id = currentBackStack.value.first().destination.id)
+                    popUpTo(route = currentBackStack.value[1].destination.route!!) {
+                        this.inclusive = true
+                    }
                 }
             } else error("Backstack can not be empty")
         } else {

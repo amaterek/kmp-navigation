@@ -34,6 +34,7 @@ kotlin {
         val desktopMain by getting
 
         commonMain.dependencies {
+            implementation(projects.navigation.jetpack)
             implementation(projects.navigation.voyager)
 
             implementation(compose.components.resources)
@@ -43,6 +44,7 @@ kotlin {
             implementation(compose.ui)
 
             implementation(libs.amaterek.log)
+            implementation(libs.compose.lifecycle.runtime)
         }
 
         commonTest.dependencies {
@@ -50,8 +52,6 @@ kotlin {
         }
 
         androidMain.dependencies {
-            implementation(projects.navigation.jetpack)
-
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.appcompat)
         }
