@@ -5,7 +5,6 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.kotlinCompose)
     alias(libs.plugins.androidLibrary)
-    alias(libs.plugins.kotlinParcelize)
     id("maven-publish")
 }
 

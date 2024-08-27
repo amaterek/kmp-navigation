@@ -2,7 +2,6 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.kotlinCompose)
     alias(libs.plugins.androidApplication)
-    alias(libs.plugins.kotlinParcelize)
 }
 
 kotlin {

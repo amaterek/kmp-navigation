@@ -2,14 +2,10 @@
 
 package amaterek.util.ui.navigation.serialization
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
+import java.io.Serializable
 
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
-actual interface Serializable : Parcelable
-
-@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
-actual typealias Serialize = Parcelize
+actual interface Serializable : Serializable
 
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual typealias SkipForSerialization = Transient
