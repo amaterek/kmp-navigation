@@ -1,11 +1,12 @@
 package amaterek.util.ui.navigation.jetpack
 
 import amaterek.util.ui.navigation.destination.ScreenDestination
-import android.util.Base64
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.reflect.KClass
 
 internal val ScreenDestination.baseRoute: String
@@ -42,22 +43,24 @@ private inline val KClass<out ScreenDestination>.definitionOfArgument: String?
         return ArgumentsName
     }
 
+@OptIn(ExperimentalEncodingApi::class)
 private fun ScreenDestination.serializeDestination(): String =
     ByteArrayOutputStream().use { outputStream ->
         ObjectOutputStream(outputStream).use {
             it.writeObject(this)
         }
-        Base64.encodeToString(outputStream.toByteArray(), Base64Flags)
+        Base64.UrlSafe.encode(outputStream.toByteArray())
     }
 
+@OptIn(ExperimentalEncodingApi::class)
 internal fun String.deserializeDestination(): ScreenDestination =
-    Base64.decode(this, Base64Flags).let { data ->
-        ObjectInputStream(ByteArrayInputStream(data)).use {
-            it.readObject()
-        }
-    } as ScreenDestination
-
-private const val Base64Flags = Base64.NO_WRAP or Base64.NO_PADDING or Base64.URL_SAFE
+    trim('{', '}').run {
+        Base64.UrlSafe.decode(this).let { data ->
+            ObjectInputStream(ByteArrayInputStream(data)).use {
+                it.readObject()
+            }
+        } as ScreenDestination
+    }
 
 internal const val ArgumentsName = "destination"
 
