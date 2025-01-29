@@ -88,7 +88,7 @@ class VoyagerNavigator internal constructor(
         replaceWith: ScreenDestination?,
     ) = doIfNavControllerAvailableOrThrow {
         if (inclusive) {
-            if (inclusive && replaceWith != null) {
+            if (replaceWith != null) {
                 replaceAll(VoyagerBackStackEntry(replaceWith))
             } else error("Backstack can not be empty")
         } else {

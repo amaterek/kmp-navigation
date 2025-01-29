@@ -140,7 +140,7 @@ class JetpackNavigator(
 
     private fun doPopUpToFirst(inclusive: Boolean, replaceWith: ScreenDestination?) = with(navHostController) {
         if (inclusive) {
-            if (inclusive && replaceWith != null) {
+            if (replaceWith != null) {
                 repeat(currentBackStack.value.size - 2) { popBackStack() }
                 navigate(replaceWith) {
                     popUpTo(id = currentBackStack.value.first().destination.id)
