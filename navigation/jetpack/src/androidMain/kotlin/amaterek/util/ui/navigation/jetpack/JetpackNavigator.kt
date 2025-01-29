@@ -18,14 +18,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.navOptions
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.yield
+import kotlin.reflect.KClass
 
 @SuppressLint("RestrictedApi")
 @InternalNavigation
@@ -40,8 +38,13 @@ class JetpackNavigator(
 
     private val screenDestinationsMap = mutableMapOf<String, ScreenDestination>()
 
-    internal fun onDestinationCreated(navBackStackEntryId: String, destination: ScreenDestination) {
-        screenDestinationsMap[navBackStackEntryId] = destination
+    internal fun getDestination(navBackStackEntry: NavBackStackEntry, destinationClass: KClass<out ScreenDestination>): ScreenDestination {
+        var destination = screenDestinationsMap[navBackStackEntry.id]
+        if (destination == null) {
+            destination = destinationClass.destination(navBackStackEntry)
+            screenDestinationsMap[navBackStackEntry.id] = destination
+        }
+        return destination
     }
 
     private inner class JetpackBackStack : Navigator.BackStack {
@@ -50,17 +53,14 @@ class JetpackNavigator(
 
         init {
             navHostController.currentBackStackEntryFlow
-                .onEach {
-                    var currentDestination: ScreenDestination? = null
-                    yield()
-                    @Suppress("MagicNumber")
-                    var repeatCounter = 500
-                    while (--repeatCounter >= 0 && currentDestination == null) {
-                        delay(1)
-                        currentDestination = screenDestinationsMap[it.id]
+                .onEach { navBackStackEntry ->
+                    var currentDestination: ScreenDestination? = screenDestinationsMap[navBackStackEntry.id]
+                    if (currentDestination == null) {
+                        val destinationClass = navBackStackEntry.destination.route!!.routeToScreenDestinationClass()
+                        currentDestination = getDestination(navBackStackEntry, destinationClass)
                     }
                     purgeScreenDestinationsMap()
-                    _currentEntryFlow.value = currentDestination!!
+                    _currentEntryFlow.value = currentDestination
                 }
                 .launchIn(coroutineScope)
         }
@@ -103,17 +103,9 @@ class JetpackNavigator(
     @Suppress("ClassOrdering")
     override val backStack: Navigator.BackStack = JetpackBackStack()
 
-    override fun getResultFlow(destination: ScreenDestination): Flow<Any?> {
-        // FIXME Get proper backstack entry
-        val currentBackStackEntry = requireNotNull(navHostController.currentBackStackEntry)
-        val savedStateHandle = currentBackStackEntry.savedStateHandle
-        return savedStateHandle.getStateFlow(ResultFlowKey, null)
-    }
-
     override fun setResult(result: Any?) {
         val currentBackStackEntry = navHostController.currentBackStackEntry ?: return
-        val savedStateHandle = currentBackStackEntry.savedStateHandle
-        savedStateHandle[ResultFlowKey] = result
+        currentBackStackEntry.emitNavigationResult(result)
     }
 
     override fun doNavigateBack() {
@@ -209,9 +201,6 @@ internal inline fun <reified T> NavBackStackEntry.getArgument(name: String): T =
         @Suppress("DEPRECATION")
         arguments?.get(name) as T
     }
-
-@Suppress("TopLevelPropertyNaming")
-private const val ResultFlowKey = "navigation_result"
 
 @Suppress("TopLevelPropertyNaming")
 internal const val ArgumentsName = "destination"

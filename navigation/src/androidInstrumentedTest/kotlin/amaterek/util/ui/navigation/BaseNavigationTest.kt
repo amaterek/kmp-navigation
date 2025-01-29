@@ -17,7 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import kotlinx.coroutines.flow.Flow
 import org.junit.Before
 import org.junit.Rule
 import kotlin.test.assertEquals
@@ -104,11 +103,6 @@ abstract class BaseNavigationTest(
 
         override val backStack: Navigator.BackStack
             get() = error("Not supported")
-
-        @InternalNavigation
-        override fun getResultFlow(destination: ScreenDestination): Flow<Any?> {
-            error("Not supported")
-        }
 
         @InternalNavigation
         override fun setResult(result: Any?) {

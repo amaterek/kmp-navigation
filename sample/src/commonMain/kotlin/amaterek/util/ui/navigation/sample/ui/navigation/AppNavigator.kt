@@ -12,7 +12,6 @@ import amaterek.util.ui.navigation.sample.ui.navigation.finishappdialog.AppFinis
 import amaterek.util.ui.navigation.sample.ui.navigation.finishappdialog.AppFinishDialogIsCancelable
 import amaterek.util.ui.navigation.sample.ui.navigation.link.AppLinkDestination
 import androidx.compose.runtime.MutableState
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlin.reflect.KClass
 
@@ -30,9 +29,6 @@ class AppNavigator(
         override fun lastIndexOf(destination: ScreenDestination): Int = -1
         override fun lastIndexOf(destination: KClass<out ScreenDestination>): Int = -1
     }
-
-    @InternalNavigation
-    override fun getResultFlow(destination: ScreenDestination): Flow<Any?> = notSupported()
 
     @InternalNavigation
     override fun setResult(result: Any?) = notSupported()

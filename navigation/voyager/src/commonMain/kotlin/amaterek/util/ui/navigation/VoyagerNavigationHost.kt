@@ -118,6 +118,7 @@ fun rememberVoyagerNavigator(
 ): Navigator = remember { VoyagerNavigator(startBackStack, graph, parent, defaultTransition) }
 
 @OptIn(ExperimentalAnimationApi::class)
+@InternalNavigation
 @Composable
 private fun ScreenItem(vNavigator: VNavigator, screen: VoyagerBackStackEntry, defaultTransition: ScreenTransition) {
     AnimatedContent(
@@ -165,10 +166,12 @@ private fun ScreenItem(vNavigator: VNavigator, screen: VoyagerBackStackEntry, de
     }
 }
 
+@InternalNavigation
 @Composable
 private fun VNavigator.ScreenContent(screen: VoyagerBackStackEntry) {
     CompositionLocalProvider(
         LocalDestination provides screen.destination,
+        LocalNavigationResultFlow provides screen,
     ) {
         saveableState("currentScreen", screen) {
             screen.Content()

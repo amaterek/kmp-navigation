@@ -4,6 +4,7 @@
 package amaterek.util.ui.navigation.jetpack
 
 import amaterek.util.ui.navigation.LocalDestination
+import amaterek.util.ui.navigation.LocalNavigationResultFlow
 import amaterek.util.ui.navigation.LocalNavigator
 import amaterek.util.ui.navigation.Navigator
 import amaterek.util.ui.navigation.annotation.InternalNavigation
@@ -114,26 +115,25 @@ private fun NavGraphBuilder.addDestination(
     }
 }
 
+@OptIn(InternalNavigation::class)
 @Composable
 private inline fun DestinationContent(
     destinationClass: KClass<out ScreenDestination>,
     navBackStackEntry: NavBackStackEntry,
     navigator: JetpackNavigator,
 ) {
-    val destination = remember {
-        destinationClass.destination(navBackStackEntry).also {
-            navigator.onDestinationCreated(navBackStackEntry.id, it)
-        }
-    }
+    val destination = remember { navigator.getDestination(navBackStackEntry, destinationClass) }
+    val navigationResultFlow = remember { JetpackNavigationResultFlow(navBackStackEntry) }
     CompositionLocalProvider(
         LocalDestination provides destination,
+        LocalNavigationResultFlow provides navigationResultFlow,
     ) {
         destination.Content()
     }
 }
 
 @Stable
-private fun KClass<out ScreenDestination>.destination(navBackStackEntry: NavBackStackEntry): ScreenDestination =
+internal fun KClass<out ScreenDestination>.destination(navBackStackEntry: NavBackStackEntry): ScreenDestination =
     objectInstance ?: navBackStackEntry.getArgument(ArgumentsName)
 
 @Stable

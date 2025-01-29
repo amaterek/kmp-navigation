@@ -11,5 +11,8 @@ internal val KClass<out ScreenDestination>.route: String
 
 private inline val KClass<out ScreenDestination>.baseRoute: String
     get() = qualifiedName!!
-        .replace('.', '_')
-        .replace('$', '_') // FIXME Use regex
+        .replace('$', '-')
+
+@Suppress("UNCHECKED_CAST")
+internal fun String.routeToScreenDestinationClass(): KClass<out ScreenDestination> =
+    Class.forName(replace('-', '$')).kotlin as KClass<out ScreenDestination>

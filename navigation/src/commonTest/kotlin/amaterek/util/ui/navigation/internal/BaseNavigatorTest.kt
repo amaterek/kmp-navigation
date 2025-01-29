@@ -10,7 +10,6 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
-import kotlinx.coroutines.flow.Flow
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
@@ -81,11 +80,6 @@ class TestBaseNavigator(
 
     override val backStack: Navigator.BackStack
         get() = requireMockError()
-
-    @InternalNavigation
-    override fun getResultFlow(destination: ScreenDestination): Flow<Any?> {
-        requireMockError()
-    }
 
     override fun setResult(result: Any?) {
         requireMockError()

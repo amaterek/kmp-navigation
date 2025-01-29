@@ -93,9 +93,11 @@ inline val Navigator.currentDestinationFlow: StateFlow<ScreenDestination>
     get() = backStack.currentDestinationFlow
 
 @OptIn(InternalNavigation::class)
-inline val Navigator.resultFlow: Flow<Any?>
+inline val Navigator.resultFlow: Flow<Any>
     @ReadOnlyComposable
     @Composable
-    get() = getResultFlow(LocalDestination.current)
-        .filterNotNull()
-        .onEach { setResult(null) }
+    get() = LocalNavigationResultFlow.current.let {
+        it.resultFlow
+            .filterNotNull()
+            .onEach { setResult(null) }
+    }

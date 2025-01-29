@@ -7,7 +7,8 @@ import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.NavigatorDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.internal.BaseNavigator
-import amaterek.util.ui.navigation.serialization.SkipForSerialization
+import amaterek.util.ui.navigation.internal.NavigationResultEmitter
+import amaterek.util.ui.navigation.internal.NavigationResultFlow
 import amaterek.util.ui.navigation.transition.ScreenTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -19,7 +20,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import cafe.adriel.voyager.navigator.Navigator as VoyagerHavHostController
 
@@ -53,14 +53,9 @@ class VoyagerNavigator internal constructor(
 
     override val backStack: Navigator.BackStack = VoyagerBackStack()
 
-    override fun getResultFlow(destination: ScreenDestination): Flow<Any?> {
-        val item = navHostController?.items?.lastOrNull { (it as VoyagerBackStackEntry).destination == destination }
-        return (item as? VoyagerBackStackEntry)?.resultFlow ?: emptyFlow()
-    }
-
     override fun setResult(result: Any?) {
-        val item = navHostController?.lastItem as VoyagerBackStackEntry
-        item.getResultChannel().trySend(result)
+        val item = navHostController?.lastItem as NavigationResultEmitter
+        item.emitNavigationResult(result)
     }
 
     override fun doNavigateBack() {
@@ -142,25 +137,18 @@ class VoyagerNavigator internal constructor(
 @Stable
 internal class VoyagerBackStackEntry(
     internal val destination: ScreenDestination,
-) : Screen {
+) : Screen, NavigationResultFlow, NavigationResultEmitter {
 
-    // HACK:
-    // By default all fields are serialized
-    // To prevent it the annotation is used but when the object is deserialized instance isn't created.
-    // We need to create it manually. NOTE 'by lazy` doesn't work also.
-    @Suppress("PropertyName")
-    @SkipForSerialization
-    private var _resultChannel: Channel<Any?>? = null
-
-    internal fun getResultChannel(): Channel<Any?> {
-        if (_resultChannel == null) {
-            _resultChannel = Channel(onBufferOverflow = BufferOverflow.DROP_OLDEST)
-        }
-        return requireNotNull(_resultChannel)
+    private val resultChannel: Channel<Any?> by lazy {
+        Channel(onBufferOverflow = BufferOverflow.DROP_OLDEST)
     }
 
-    internal val resultFlow: Flow<Any?>
-        get() = getResultChannel().receiveAsFlow()
+    override val resultFlow: Flow<Any?>
+        get() = resultChannel.receiveAsFlow()
+
+    override fun emitNavigationResult(result: Any?) {
+        resultChannel.trySend(result)
+    }
 
     override val key: ScreenKey = destination.toString() // FIXME check if it is ok?
 

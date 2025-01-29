@@ -5,7 +5,6 @@ import amaterek.util.ui.navigation.destination.Destination
 import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import androidx.compose.runtime.Stable
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 @Stable
@@ -23,9 +22,6 @@ interface Navigator {
     }
 
     val backStack: BackStack
-
-    @InternalNavigation
-    fun getResultFlow(destination: ScreenDestination): Flow<Any?>
 
     @InternalNavigation
     fun setResult(result: Any?)
