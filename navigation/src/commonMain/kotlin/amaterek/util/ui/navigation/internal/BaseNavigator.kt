@@ -8,6 +8,7 @@ import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.NavigatorDestination
 import amaterek.util.ui.navigation.destination.NavigatorDestination.PopUpTo
 import amaterek.util.ui.navigation.destination.NavigatorDestination.RedirectToParent
+import amaterek.util.ui.navigation.destination.NoneDestination
 import amaterek.util.ui.navigation.destination.PreviousDestination
 import amaterek.util.ui.navigation.destination.PreviousDestinationWithResult
 import amaterek.util.ui.navigation.destination.RedirectToParentStrategy
@@ -22,6 +23,7 @@ abstract class BaseNavigator(
 
     override fun navigateTo(destination: Destination) {
         when (destination) {
+            NoneDestination -> Unit
             PreviousDestination -> navigateToPreviousDestination(result = null)
             is PreviousDestinationWithResult -> navigateToPreviousDestination(result = destination.result)
             is NavigatorDestination -> handleNavigatorDestination(destination)

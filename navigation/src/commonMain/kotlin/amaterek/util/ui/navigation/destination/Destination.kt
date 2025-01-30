@@ -23,3 +23,8 @@ data object PreviousDestination : Destination
  * Predefined previous destination to navigate back with result.
  */
 data class PreviousDestinationWithResult(val result: Any) : Destination
+
+/**
+ *  Predefined none destination to don't navigate to any destination
+ */
+data object NoneDestination : Destination
