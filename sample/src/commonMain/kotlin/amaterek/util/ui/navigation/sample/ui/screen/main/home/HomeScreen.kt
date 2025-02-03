@@ -2,13 +2,13 @@ package amaterek.util.ui.navigation.sample.ui.screen.main.home
 
 import amaterek.util.log.Log
 import amaterek.util.ui.navigation.LocalDestination
+import amaterek.util.ui.navigation.LocalNavigationResultFlow
 import amaterek.util.ui.navigation.LocalNavigator
 import amaterek.util.ui.navigation.backhandler.BackHandler
 import amaterek.util.ui.navigation.destination.redirectToParent
 import amaterek.util.ui.navigation.destination.redirectToParentIfNotInGraph
 import amaterek.util.ui.navigation.navigateBack
 import amaterek.util.ui.navigation.navigateBackWithResult
-import amaterek.util.ui.navigation.resultFlow
 import amaterek.util.ui.navigation.sample.ui.navigation.LifecycleLogger
 import amaterek.util.ui.navigation.sample.ui.navigation.finishappdialog.AppFinishDialogIsCancelable
 import amaterek.util.ui.navigation.sample.ui.navigation.link.AppLinkDestination
@@ -46,7 +46,7 @@ internal fun HomeScreen() {
     var forResultDialogDestinationResult by rememberSaveable { mutableStateOf<String?>(null) }
     var withArgumentAndForResultDestinationResult by rememberSaveable { mutableStateOf<String?>(null) }
     var notHandledDestinationResult by rememberSaveable { mutableStateOf<Any?>(null) }
-    val navigationResultFlow = navigator.resultFlow
+    val navigationResultFlow = LocalNavigationResultFlow.current
 
     LifecycleLogger()
 
@@ -59,8 +59,10 @@ internal fun HomeScreen() {
                 when (it) {
                     is HomeForResultDialogDestination.Companion.ForResultDialogDestinationResult ->
                         forResultDialogDestinationResult = it.value
+
                     is RootWithArgumentAndForResultDestination.WithArgumentAndForResultDestinationResult ->
                         withArgumentAndForResultDestinationResult = it.value
+
                     else -> notHandledDestinationResult = it
                 }
             }

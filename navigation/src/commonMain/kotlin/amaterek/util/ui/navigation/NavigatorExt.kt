@@ -2,7 +2,6 @@
 
 package amaterek.util.ui.navigation
 
-import amaterek.util.ui.navigation.annotation.InternalNavigation
 import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.PopUpToDestination
 import amaterek.util.ui.navigation.destination.PopUpToFirstDestination
@@ -13,12 +12,10 @@ import amaterek.util.ui.navigation.destination.popUpToFirst
 import amaterek.util.ui.navigation.destination.replace
 import amaterek.util.ui.navigation.destination.replaceAll
 import amaterek.util.ui.navigation.destination.withResult
+import amaterek.util.ui.navigation.internal.NavigationResultFlow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.onEach
 
 inline fun Navigator.canNavigateBack() =
     backStack.size > 1
@@ -92,12 +89,9 @@ inline fun Navigator.popUpToWithResult(destination: ScreenDestination, result: A
 inline val Navigator.currentDestinationFlow: StateFlow<ScreenDestination>
     get() = backStack.currentDestinationFlow
 
-@OptIn(InternalNavigation::class)
-inline val Navigator.resultFlow: Flow<Any>
+@Suppress("UnusedReceiverParameter")
+@Deprecated("Will be removed", replaceWith = ReplaceWith("LocalNavigationResultFlow"))
+inline val Navigator.resultFlow: NavigationResultFlow
     @ReadOnlyComposable
     @Composable
-    get() = LocalNavigationResultFlow.current.let {
-        it.resultFlow
-            .filterNotNull()
-            .onEach { setResult(null) }
-    }
+    get() = LocalNavigationResultFlow.current

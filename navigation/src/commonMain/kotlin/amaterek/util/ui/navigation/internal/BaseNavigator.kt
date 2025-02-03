@@ -41,7 +41,7 @@ abstract class BaseNavigator(
         is PopUpTo -> {
             destination.requireInBackstack()
             doPopUpTo(destination)
-            destination.result?.let { setResult(it) }
+            destination.result?.let { setResultForCurrentDestination(it) }
         }
 
         is RedirectToParent -> parent?.let {
@@ -73,7 +73,7 @@ abstract class BaseNavigator(
     private fun navigateToPreviousDestination(result: Any?) {
         if (canNavigateBack()) {
             doNavigateBack()
-            result?.let { setResult(it) }
+            result?.let { setResultForCurrentDestination(it) }
         } else {
             redirectToParent(result?.let { PreviousDestinationWithResult(it) } ?: PreviousDestination)
         }
@@ -107,6 +107,8 @@ abstract class BaseNavigator(
 
     private fun destinationIsNotInBackStack(destination: GraphDestination): Nothing =
         error("Requested destination is not in backstack: $destination")
+
+    protected abstract fun setResultForCurrentDestination(result: Any)
 
     protected abstract fun doNavigateBack()
 

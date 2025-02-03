@@ -1,6 +1,5 @@
 package amaterek.util.ui.navigation
 
-import amaterek.util.ui.navigation.annotation.InternalNavigation
 import amaterek.util.ui.navigation.destination.Destination
 import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
@@ -22,9 +21,6 @@ interface Navigator {
     }
 
     val backStack: BackStack
-
-    @InternalNavigation
-    fun setResult(result: Any?)
 
     /** Navigates to the destination
      *

@@ -5,5 +5,5 @@ import amaterek.util.ui.navigation.annotation.InternalNavigation
 @InternalNavigation
 interface NavigationResultEmitter {
 
-    fun emitNavigationResult(result: Any?)
+    fun emitNavigationResult(result: Any)
 }

@@ -104,11 +104,6 @@ abstract class BaseNavigationTest(
         override val backStack: Navigator.BackStack
             get() = error("Not supported")
 
-        @InternalNavigation
-        override fun setResult(result: Any?) {
-            error("Not supported")
-        }
-
         override fun navigateTo(destination: Destination) {
             lastDestination = destination
         }

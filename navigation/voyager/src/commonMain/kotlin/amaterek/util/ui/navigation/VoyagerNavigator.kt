@@ -16,7 +16,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.screen.ScreenKey
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -53,7 +53,7 @@ class VoyagerNavigator internal constructor(
 
     override val backStack: Navigator.BackStack = VoyagerBackStack()
 
-    override fun setResult(result: Any?) {
+    override fun setResultForCurrentDestination(result: Any) {
         val item = navHostController?.lastItem as NavigationResultEmitter
         item.emitNavigationResult(result)
     }
@@ -139,14 +139,15 @@ internal class VoyagerBackStackEntry(
     internal val destination: ScreenDestination,
 ) : Screen, NavigationResultFlow, NavigationResultEmitter {
 
-    private val resultChannel: Channel<Any?> by lazy {
+    private val resultChannel: Channel<Any> by lazy {
         Channel(onBufferOverflow = BufferOverflow.DROP_OLDEST)
     }
 
-    override val resultFlow: Flow<Any?>
-        get() = resultChannel.receiveAsFlow()
+    override suspend fun collect(collector: FlowCollector<Any>) {
+        resultChannel.receiveAsFlow().collect(collector)
+    }
 
-    override fun emitNavigationResult(result: Any?) {
+    override fun emitNavigationResult(result: Any) {
         resultChannel.trySend(result)
     }
 

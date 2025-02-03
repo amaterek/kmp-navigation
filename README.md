@@ -159,7 +159,7 @@ fun Content() {
 
         navgateTo(PopUpToDestination(MyDestinationWithArg("Argument 1")).withResult("Result"))
         // Back stack is:
-        //   MyDestinationWithArg("Argument 1") and Navigator.resultFlow emits "Result"
+        //   MyDestinationWithArg("Argument 1") and LocalNavigationResultFlow.current emits "Result"
 
         navgateTo(ParentDestination.redirectToParent(deep = 2))
         // Redirects ParentDestination to parent's parent
@@ -214,7 +214,7 @@ fun Content() {
 @Composable
 fun Content() {
     val navigator = LocalNavigator.current
-    val navigationResultFlow by LocalNavigator.current.resultFlow
+    val navigationResultFlow by LocalNavigationResultFlow.current
 
     LaunchedEffect(navigator) {
         // When destination used PreviousDestination or PopUpTo with operator 'withResult(...)'

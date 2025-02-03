@@ -89,7 +89,7 @@ class TestBaseNavigator(
     override val backStack: Navigator.BackStack
         get() = requireMockError()
 
-    override fun setResult(result: Any?) {
+    override fun setResultForCurrentDestination(result: Any) {
         requireMockError()
     }
 

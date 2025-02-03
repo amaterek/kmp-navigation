@@ -1,8 +1,7 @@
 package amaterek.util.ui.navigation.common
 
-import amaterek.util.ui.navigation.LocalNavigator
+import amaterek.util.ui.navigation.LocalNavigationResultFlow
 import amaterek.util.ui.navigation.destination.ScreenDestination
-import amaterek.util.ui.navigation.resultFlow
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
@@ -21,7 +20,7 @@ interface TestDestination : ScreenDestination {
 
     @Composable
     override fun Content() {
-        val navigationResult by LocalNavigator.current.resultFlow.collectAsState("")
+        val navigationResult by LocalNavigationResultFlow.current.collectAsState("")
 
         Column(modifier = Modifier.fillMaxSize()) {
             Text(

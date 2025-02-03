@@ -103,7 +103,7 @@ class JetpackNavigator(
     @Suppress("ClassOrdering")
     override val backStack: Navigator.BackStack = JetpackBackStack()
 
-    override fun setResult(result: Any?) {
+    override fun setResultForCurrentDestination(result: Any) {
         val currentBackStackEntry = navHostController.currentBackStackEntry ?: return
         currentBackStackEntry.emitNavigationResult(result)
     }

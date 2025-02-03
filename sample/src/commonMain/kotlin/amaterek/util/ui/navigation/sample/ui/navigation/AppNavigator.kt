@@ -30,9 +30,6 @@ class AppNavigator(
         override fun lastIndexOf(destination: KClass<out ScreenDestination>): Int = -1
     }
 
-    @InternalNavigation
-    override fun setResult(result: Any?) = notSupported()
-
     override fun navigateTo(destination: Destination) = when (destination) {
         is PreviousDestination, is PreviousDestinationWithResult -> {
             when {
