@@ -12,7 +12,6 @@
         <activity
             android:name="amaterek.util.ui.navigation.sample.ui.MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:configChanges="orientation|uiMode|keyboardHidden"
             android:theme="@style/Theme.Sample">
             <intent-filter>

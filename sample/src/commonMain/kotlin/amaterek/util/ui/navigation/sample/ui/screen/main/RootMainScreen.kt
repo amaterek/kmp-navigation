@@ -10,8 +10,9 @@ import amaterek.util.ui.navigation.currentDestinationFlow
 import amaterek.util.ui.navigation.destination.popUpTo
 import amaterek.util.ui.navigation.navigateBack
 import amaterek.util.ui.navigation.popUpTo
-import amaterek.util.ui.navigation.sample.LocalNavigatorProvider
+import amaterek.util.ui.navigation.sample.ui.NavigationHost
 import amaterek.util.ui.navigation.sample.ui.navigation.LifecycleLogger
+import amaterek.util.ui.navigation.sample.ui.rememberNavigator
 import amaterek.util.ui.navigation.sample.ui.screen.main.home.HomeDestination
 import amaterek.util.ui.navigation.sample.ui.screen.main.home.forresultdialog.HomeForResultDialogDestination
 import amaterek.util.ui.navigation.sample.ui.screen.main.home.multiple.HomeMultipleDestination
@@ -57,7 +58,7 @@ internal fun RootMainScreen() {
     val navigator = LocalNavigator.current
     val currentDestination = LocalDestination.current
 
-    val mainNavigator = LocalNavigatorProvider.current.rememberNavigator(
+    val mainNavigator = rememberNavigator(
         startDestination = HomeDestination,
         graph = setOf(
             HomeDestination::class,
@@ -139,7 +140,7 @@ internal fun RootMainScreen() {
                     .fillMaxSize()
                     .padding(contentPadding),
             ) {
-                LocalNavigatorProvider.current.invoke(
+                NavigationHost(
                     navigator = mainNavigator,
                 )
             }

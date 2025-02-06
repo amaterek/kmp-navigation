@@ -40,10 +40,10 @@ class AppNavigator(
                     when (val result = destination.result) {
                         is AppFinishDialogIsCancelable ->
                             appDialogState.value = AppFinishDialogDestination(result)
-                        else -> platformNavigation.finishApp()
+                        else -> finishApp()
                     }
                 }
-                else -> platformNavigation.finishApp()
+                else -> finishApp()
             }
         }
         is AppLinkDestination -> platformNavigation.openLink(destination.link)
@@ -55,6 +55,8 @@ class AppNavigator(
         }
         else -> error("Unsupported destination: $destination")
     }
+
+    fun finishApp() = platformNavigation.finishApp()
 }
 
 private fun notSupported(): Nothing = error("Not supported")

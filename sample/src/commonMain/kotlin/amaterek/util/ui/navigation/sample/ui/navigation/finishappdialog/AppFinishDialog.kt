@@ -2,7 +2,7 @@ package amaterek.util.ui.navigation.sample.ui.navigation.finishappdialog
 
 import amaterek.util.ui.navigation.LocalNavigator
 import amaterek.util.ui.navigation.navigateBack
-import amaterek.util.ui.navigation.sample.LocalPlatformNavigation
+import amaterek.util.ui.navigation.sample.ui.navigation.AppNavigator
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,8 +22,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 internal fun AppFinishDialog() {
 
-    val navigator = LocalNavigator.current
-    val platformNavigation = LocalPlatformNavigation.current
+    val navigator = LocalNavigator.current as AppNavigator
 
     Surface(
         modifier = Modifier
@@ -41,7 +40,7 @@ internal fun AppFinishDialog() {
             )
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Button(
-                    onClick = { platformNavigation.finishApp() },
+                    onClick = { navigator.finishApp() },
                 ) {
                     Text("Yes")
                 }

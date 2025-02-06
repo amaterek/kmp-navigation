@@ -26,7 +26,7 @@ internal class AppFinishDialogDestination(cancelable: AppFinishDialogIsCancelabl
     }
 }
 
-enum class AppFinishDialogIsCancelable {
+internal enum class AppFinishDialogIsCancelable {
     Yes,
     No,
 }

@@ -13,5 +13,5 @@ actual class PlatformNavigation actual constructor(context: Any) {
         exitProcess(0)
     }
 
-    actual fun openLink(url: String) = Unit
+    actual fun openLink(url: String) = Unit // TODO
 }
