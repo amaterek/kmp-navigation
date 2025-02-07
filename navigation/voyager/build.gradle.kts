@@ -7,6 +7,7 @@ plugins {
 
 kotlin {
     jvm()
+    jvmToolchain(libs.versions.jvmTarget.get().toInt())
 
     if (findProperty("build.ios") == "true") {
         listOf(

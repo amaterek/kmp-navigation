@@ -11,6 +11,7 @@ plugins {
 
 kotlin {
     jvm()
+    jvmToolchain(libs.versions.jvmTarget.get().toInt())
 
     if (findProperty("build.ios") == "true") {
         listOf(
@@ -100,6 +101,11 @@ android {
     dependencies {
         testImplementation(libs.junit)
         testImplementation(libs.mockk)
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 
     packaging {
