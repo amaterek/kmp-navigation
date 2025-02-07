@@ -12,6 +12,7 @@ import amaterek.util.ui.navigation.navigateBackWithResult
 import amaterek.util.ui.navigation.sample.ui.navigation.LifecycleLogger
 import amaterek.util.ui.navigation.sample.ui.navigation.finishappdialog.AppFinishDialogIsCancelable
 import amaterek.util.ui.navigation.sample.ui.navigation.link.AppLinkDestination
+import amaterek.util.ui.navigation.sample.ui.screen.main.LocalRootNavigationResultFlow
 import amaterek.util.ui.navigation.sample.ui.screen.main.home.forresultdialog.HomeForResultDialogDestination
 import amaterek.util.ui.navigation.sample.ui.screen.main.home.multiple.HomeMultipleDestination
 import amaterek.util.ui.navigation.sample.ui.screen.withargumentandforresult.RootWithArgumentAndForResultDestination
@@ -34,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 
 @Suppress("LongMethod")
@@ -46,7 +48,10 @@ internal fun HomeScreen() {
     var forResultDialogDestinationResult by rememberSaveable { mutableStateOf<String?>(null) }
     var withArgumentAndForResultDestinationResult by rememberSaveable { mutableStateOf<String?>(null) }
     var notHandledDestinationResult by rememberSaveable { mutableStateOf<Any?>(null) }
-    val navigationResultFlow = LocalNavigationResultFlow.current
+    val navigationResultFlow = merge(
+        LocalRootNavigationResultFlow.current,
+        LocalNavigationResultFlow.current,
+    )
 
     LifecycleLogger()
 

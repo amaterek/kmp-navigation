@@ -28,19 +28,25 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import kmp_navigation.sample.generated.resources.Res
 import kmp_navigation.sample.generated.resources.back_svgrepo_com
 import kmp_navigation.sample.generated.resources.close_svgrepo_com
 import kmp_navigation.sample.generated.resources.home_svgrepo_com
 import kmp_navigation.sample.generated.resources.other_1_svgrepo_com
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 
@@ -77,59 +83,70 @@ internal fun RootMainScreen() {
     BackHandler { navigator.navigateBack() }
 
     val navigationResultFlow = LocalNavigationResultFlow.current
+    val forChildrenNavigationResultFlow = remember { MutableSharedFlow<Any>() }
 
     LaunchedEffect(Unit) {
         navigationResultFlow
             .onEach {
                 Log.i("MainScreen", "redirect result from parent navigator to main: result=$it")
+                // To pass navigation events to children we have to do it in another main thread slice (not Dispatchers.Main.immediate)
+                launch(Dispatchers.Main) { forChildrenNavigationResultFlow.emit(it) }
             }
             .launchIn(this)
     }
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(currentDestination.toString())
-                },
-                navigationIcon = {
-                    Icon(
-                        modifier = Modifier.clickable { mainNavigator.navigateBack() },
-                        painter = if (mainNavigatorCanNavigateBack) {
-                            painterResource(Res.drawable.back_svgrepo_com)
-                        } else {
-                            painterResource(Res.drawable.close_svgrepo_com)
-                        },
-                        contentDescription = null,
-                    )
-                },
-            )
-        },
-        bottomBar = {
-            BottomAppBar {
-                NavigationBarItem(
-                    onClick = { mainNavigator.popUpTo(HomeDestination) },
-                    icon = { Icon(painterResource(Res.drawable.home_svgrepo_com), null) },
-                    label = { Text("Home") },
-                    selected = currentMainDestination == HomeDestination,
+    CompositionLocalProvider(
+        LocalRootNavigationResultFlow provides forChildrenNavigationResultFlow
+    ) {
+        Scaffold(
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = {
+                        Text(currentDestination.toString())
+                    },
+                    navigationIcon = {
+                        Icon(
+                            modifier = Modifier.clickable { mainNavigator.navigateBack() },
+                            painter = if (mainNavigatorCanNavigateBack) {
+                                painterResource(Res.drawable.back_svgrepo_com)
+                            } else {
+                                painterResource(Res.drawable.close_svgrepo_com)
+                            },
+                            contentDescription = null,
+                        )
+                    },
                 )
-                NavigationBarItem(
-                    onClick = { mainNavigator.navigateTo(OtherDestination.popUpTo(HomeDestination)) },
-                    icon = { Icon(painterResource(Res.drawable.other_1_svgrepo_com), null) },
-                    label = { Text("Other") },
-                    selected = currentMainDestination == OtherDestination,
+            },
+            bottomBar = {
+                BottomAppBar {
+                    NavigationBarItem(
+                        onClick = { mainNavigator.popUpTo(HomeDestination) },
+                        icon = { Icon(painterResource(Res.drawable.home_svgrepo_com), null) },
+                        label = { Text("Home") },
+                        selected = currentMainDestination == HomeDestination,
+                    )
+                    NavigationBarItem(
+                        onClick = { mainNavigator.navigateTo(OtherDestination.popUpTo(HomeDestination)) },
+                        icon = { Icon(painterResource(Res.drawable.other_1_svgrepo_com), null) },
+                        label = { Text("Other") },
+                        selected = currentMainDestination == OtherDestination,
+                    )
+                }
+            }
+        ) { contentPadding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(contentPadding),
+            ) {
+                LocalNavigatorProvider.current.invoke(
+                    navigator = mainNavigator,
                 )
             }
         }
-    ) { contentPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(contentPadding),
-        ) {
-            LocalNavigatorProvider.current.invoke(
-                navigator = mainNavigator,
-            )
-        }
     }
+}
+
+val LocalRootNavigationResultFlow = staticCompositionLocalOf<Flow<Any>> {
+    error("Local navigation result hasn't been provided")
 }
