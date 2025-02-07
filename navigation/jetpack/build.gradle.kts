@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.kotlinCompose)
+    alias(libs.plugins.kotlinCompose.compiler)
+    alias(libs.plugins.kotlinCompose.plugin)
     alias(libs.plugins.androidLibrary)
     id("maven-publish")
 }
@@ -42,7 +43,7 @@ kotlin {
         }
     }
 
-    android {
+    androidTarget {
         publishLibraryVariants("release")
     }
 
@@ -58,10 +59,6 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
 
         consumerProguardFile("consumer-rules.pro")
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = libs.versions.compose.compiler.get()
     }
 }
 

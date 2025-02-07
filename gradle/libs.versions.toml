@@ -2,12 +2,11 @@
 libraryVersion = "0.1"
 jvmTarget = "17"
 agp = "8.8.0"
-kotlin = "1.9.23"
+kotlin = "2.1.0"
 kotlin-serialization = "1.6.0"
 coroutines = "1.8.0"
 compose = "1.7.7"
-compose-plugin = "1.6.2"
-compose-compiler = "1.5.11"
+compose-plugin = "1.7.3"
 compose-material3 = "1.3.1"
 android-compileSdk = "35"
 android-minSdk = "26"
@@ -69,7 +68,8 @@ androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
-kotlinCompose = { id = "org.jetbrains.compose", version.ref = "compose-plugin" }
+kotlinCompose-plugin = { id = "org.jetbrains.compose", version.ref = "compose-plugin" }
+kotlinCompose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 
 # Utils

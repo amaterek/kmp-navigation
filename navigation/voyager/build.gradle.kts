@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.kotlinCompose)
+    alias(libs.plugins.kotlinCompose.compiler)
+    alias(libs.plugins.kotlinCompose.plugin)
     alias(libs.plugins.androidLibrary)
     id("maven-publish")
 }
@@ -53,7 +54,7 @@ kotlin {
         }
     }
 
-    android {
+    androidTarget {
         publishLibraryVariants("release")
     }
 
