@@ -129,7 +129,7 @@ class JetpackNavigator(
         if (inclusive) {
             if (replaceWith != null) {
                 repeat(currentBackStack.value.size - 2) { popBackStack() }
-                navigate(replaceWith) {
+                navigateToScreenDestination(replaceWith) {
                     popUpTo(id = currentBackStack.value.first().destination.id)
                 }
             } else error("Backstack can not be empty")
@@ -148,12 +148,12 @@ class JetpackNavigator(
         if (popupCount > 0) {
             repeat(popupCount) { navHostController.popBackStack() }
         }
-        if (replaceWith != null) navHostController.navigate(replaceWith)
+        if (replaceWith != null) navHostController.navigateToScreenDestination(replaceWith)
     }
 
     private fun doPopUpTo(destination: GraphDestination, inclusive: Boolean, replaceWith: ScreenDestination?) {
         if (replaceWith != null) {
-            navHostController.navigate(replaceWith) {
+            navHostController.navigateToScreenDestination(replaceWith) {
                 popUpTo(route = destination.baseRoute) {
                     this.inclusive = inclusive
                 }
@@ -167,11 +167,11 @@ class JetpackNavigator(
     }
 
     override fun doPush(destination: ScreenDestination) {
-        navHostController.navigate(destination)
+        navHostController.navigateToScreenDestination(destination)
     }
 }
 
-private inline fun NavController.navigate(
+private inline fun NavController.navigateToScreenDestination(
     destination: ScreenDestination,
     noinline builder: (NavOptionsBuilder.() -> Unit)? = null,
 ) {

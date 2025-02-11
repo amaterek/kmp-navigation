@@ -14,7 +14,7 @@ android-minSdk = "26"
 android-targetSdk = "35"
 androidx-activity-compose = "1.10.0"
 androidx-appcompat = "1.7.0"
-androidx-navigation = "2.7.7"
+androidx-navigation = "2.8.6"
 androidx-lifecycle = "2.6.1"
 voyager = "1.0.0"
 
