@@ -9,6 +9,7 @@ import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.internal.BaseNavigator
 import amaterek.util.ui.navigation.internal.NavigationResultEmitter
 import amaterek.util.ui.navigation.internal.NavigationResultFlow
+import amaterek.util.ui.navigation.serialization.SkipForSerialization
 import amaterek.util.ui.navigation.transition.ScreenTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -139,6 +140,7 @@ internal class VoyagerBackStackEntry(
     internal val destination: ScreenDestination,
 ) : Screen, NavigationResultFlow, NavigationResultEmitter {
 
+    @delegate:SkipForSerialization
     private val resultChannel: Channel<Any> by lazy {
         Channel(onBufferOverflow = BufferOverflow.DROP_OLDEST)
     }
