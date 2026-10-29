@@ -55,7 +55,7 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.coroutines.test)
             implementation(libs.kotlin.test)
-            implementation(libs.mockk.common)
+            implementation(libs.mockk)
             implementation(libs.turbine)
         }
         jvmTest.dependencies {
