@@ -18,6 +18,13 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "kmp-navigation"
+
+// TODO Temporary solution: the JitPack build of kmp-log has no iOS artifacts, so the local kmp-log is used instead
+includeBuild("../kmp-log") {
+    dependencySubstitution {
+        substitute(module("com.github.amaterek.kmp-log:log")).using(project(":log"))
+    }
+}
 include(":navigation")
 include(":navigation:jetpack")
 include(":navigation:voyager")
