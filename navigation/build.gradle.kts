@@ -1,21 +1,21 @@
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetTree
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.kotlinCompose.compiler)
-    alias(libs.plugins.kotlinCompose.plugin)
-    alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.androidMultiplatformLibrary)
     id("maven-publish")
 }
 
 kotlin {
-    jvm()
-    jvmToolchain(libs.versions.jvmTarget.get().toInt())
+    jvm {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.fromTarget(libs.versions.jvmTarget.get()))
+        }
+    }
 
     if (findProperty("build.ios") == "true") {
         listOf(
-            iosX64(),
             iosArm64(),
             iosSimulatorArm64()
         ).forEach {
@@ -26,10 +26,31 @@ kotlin {
         }
     }
 
-    androidTarget {
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = libs.versions.jvmTarget.get()
+    android {
+        namespace = "amaterek.util.ui.navigation"
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
+        minSdk = libs.versions.android.minSdk.get().toInt()
+
+        compilerOptions {
+            jvmTarget.set(JvmTarget.fromTarget(libs.versions.jvmTarget.get()))
+        }
+
+        optimization {
+            consumerKeepRules.publish = true
+            consumerKeepRules.file("consumer-rules.pro")
+        }
+
+        withHostTest {}
+
+        withDeviceTestBuilder {
+            sourceSetTreeName = "test"
+        }.configure {
+            instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        }
+
+        packaging {
+            resources {
+                pickFirsts += "/META-INF/LICENSE*.md"
             }
         }
     }
@@ -38,9 +59,9 @@ kotlin {
         commonMain.dependencies {
             api(libs.coroutines.core)
 
-            implementation(compose.foundation)
-            implementation(compose.ui)
-            implementation(compose.runtime)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.ui)
+            implementation(libs.compose.runtime)
         }
 
         androidMain.dependencies {
@@ -58,59 +79,26 @@ kotlin {
             implementation(libs.junit)
             implementation(libs.mockk)
         }
-    }
 
-    androidTarget {
-        publishLibraryVariants("release")
-    }
+        getByName("androidHostTest").dependencies {
+            implementation(libs.junit)
+            implementation(libs.mockk)
+        }
 
-    task("testClasses")
-
-    androidTarget {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
-        instrumentedTestVariant.sourceSetTree.set(KotlinSourceSetTree.test)
-    }
-}
-
-dependencies {
-    androidTestImplementation(project(":navigation:jetpack"))
-    androidTestImplementation(project(":navigation:voyager"))
-    androidTestImplementation(libs.androidx.activity.compose)
-    androidTestImplementation(libs.androidx.appcompat)
-    androidTestImplementation(libs.androidx.lifecycle.runtime)
-    androidTestImplementation(libs.compose.material3)
-    androidTestImplementation(libs.compose.ui)
-    androidTestImplementation(libs.compose.ui.test.junit4)
-    androidTestImplementation(libs.compose.ui.test.manifest)
-    androidTestImplementation(libs.junit)
-    androidTestImplementation(libs.mockk)
-}
-
-android {
-    namespace = "amaterek.util.ui.navigation"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-
-    defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        consumerProguardFile("consumer-rules.pro")
-    }
-
-    dependencies {
-        testImplementation(libs.junit)
-        testImplementation(libs.mockk)
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    packaging {
-        resources {
-            pickFirsts += "/META-INF/LICENSE*.md"
+        getByName("androidDeviceTest").dependencies {
+            implementation(project(":navigation:jetpack"))
+            implementation(project(":navigation:voyager"))
+            implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.appcompat)
+            implementation(libs.androidx.lifecycle.runtime)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.ui)
+            implementation(libs.androidx.compose.ui.test.junit4)
+            implementation(libs.androidx.compose.ui.test.manifest)
+            implementation(libs.androidx.test.junit)
+            implementation(libs.androidx.test.runner)
+            implementation(libs.junit)
+            implementation(libs.mockk)
         }
     }
 }

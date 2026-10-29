@@ -1,18 +1,21 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.kotlinCompose.compiler)
-    alias(libs.plugins.kotlinCompose.plugin)
-    alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.androidMultiplatformLibrary)
     id("maven-publish")
 }
 
 kotlin {
-    jvm()
-    jvmToolchain(libs.versions.jvmTarget.get().toInt())
+    jvm {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.fromTarget(libs.versions.jvmTarget.get()))
+        }
+    }
 
     if (findProperty("build.ios") == "true") {
         listOf(
-            iosX64(),
             iosArm64(),
             iosSimulatorArm64()
         ).forEach {
@@ -23,20 +26,27 @@ kotlin {
         }
     }
 
-    androidTarget {
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = libs.versions.jvmTarget.get()
-            }
+    android {
+        namespace = "amaterek.util.ui.navigation.voyager"
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
+        minSdk = libs.versions.android.minSdk.get().toInt()
+
+        compilerOptions {
+            jvmTarget.set(JvmTarget.fromTarget(libs.versions.jvmTarget.get()))
+        }
+
+        optimization {
+            consumerKeepRules.publish = true
+            consumerKeepRules.file("consumer-rules.pro")
         }
     }
 
     sourceSets {
         commonMain.dependencies {
             api(projects.navigation)
-            implementation(compose.foundation)
-            implementation(compose.runtime)
-            implementation(compose.ui)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.ui)
 
             implementation(libs.voyager.core)
             implementation(libs.voyager.screenmodel)
@@ -52,28 +62,6 @@ kotlin {
             implementation(libs.junit)
             implementation(libs.mockk)
         }
-    }
-
-    androidTarget {
-        publishLibraryVariants("release")
-    }
-
-    task("testClasses")
-}
-
-android {
-    namespace = "amaterek.util.ui.navigation"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-
-    defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
-
-        consumerProguardFile("consumer-rules.pro")
-    }
-
-    dependencies {
-        testImplementation(libs.junit)
-        testImplementation(libs.mockk)
     }
 }
 

@@ -1,26 +1,35 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.kotlinCompose.compiler)
     alias(libs.plugins.kotlinCompose.plugin)
-    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.androidMultiplatformLibrary)
 }
 
 kotlin {
+    android {
+        namespace = "amaterek.util.ui.navigation.sample.shared"
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
+        minSdk = libs.versions.android.minSdk.get().toInt()
 
-    androidTarget {
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = libs.versions.jvmTarget.get()
-            }
+        androidResources {
+            enable = true
+        }
+
+        compilerOptions {
+            jvmTarget.set(JvmTarget.fromTarget(libs.versions.jvmTarget.get()))
         }
     }
 
-    jvm("desktop")
-    jvmToolchain(libs.versions.jvmTarget.get().toInt())
+    jvm("desktop") {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.fromTarget(libs.versions.jvmTarget.get()))
+        }
+    }
 
     if (findProperty("build.ios") == "true") {
         listOf(
-            iosX64(),
             iosArm64(),
             iosSimulatorArm64()
         ).forEach {
@@ -37,11 +46,11 @@ kotlin {
         commonMain.dependencies {
             implementation(projects.navigation.voyager)
 
-            implementation(compose.components.resources)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.runtime)
-            implementation(compose.ui)
+            implementation(libs.compose.components.resources)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.ui)
 
             implementation(libs.amaterek.log)
         }
@@ -54,7 +63,6 @@ kotlin {
             implementation(projects.navigation.jetpack)
 
             implementation(libs.androidx.activity.compose)
-            implementation(libs.androidx.appcompat)
         }
 
         desktopMain.dependencies {
@@ -62,56 +70,10 @@ kotlin {
             implementation(libs.coroutines.swing)
         }
     }
-
-    task("testClasses")
-}
-
-android {
-    namespace = "amaterek.util.ui.navigation.sample"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-
-    defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
-    }
-
-    buildFeatures {
-        compose = true
-    }
-
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-
-    buildTypes {
-        debug {
-        }
-        release {
-            isMinifyEnabled = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("debug") // temporary solution
-        }
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    dependencies {
-        debugImplementation(libs.compose.ui.tooling)
-        debugImplementation(libs.compose.ui.tooling.preview)
-    }
 }
 
 compose.desktop {
     application {
         mainClass = "amaterek.util.ui.navigation.sample.MainKt"
     }
-}
-
-compose.experimental {
-    web.application {}
 }
