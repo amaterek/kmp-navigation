@@ -6,6 +6,8 @@ import amaterek.util.ui.navigation.VoyagerNavigationHost
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.jetpack.JetpackNavigationHost
 import amaterek.util.ui.navigation.jetpack.rememberJetpackNavigator
+import amaterek.util.ui.navigation.nav3.Nav3NavigationHost
+import amaterek.util.ui.navigation.nav3.rememberNav3Navigator
 import amaterek.util.ui.navigation.rememberVoyagerNavigator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -58,4 +60,21 @@ internal class GetJetpackNavigationHost : NavigatorProvider {
         graph: NavigationGraph,
         parent: Navigator?,
     ): Navigator = rememberJetpackNavigator(startDestination, graph, parent)
+}
+
+internal class GetNav3NavigationHost : NavigatorProvider {
+
+    @Composable
+    override fun invoke(
+        navigator: Navigator,
+    ) {
+        Nav3NavigationHost(navigator)
+    }
+
+    @Composable
+    override fun rememberNavigator(
+        startDestination: ScreenDestination,
+        graph: NavigationGraph,
+        parent: Navigator?,
+    ): Navigator = rememberNav3Navigator(startDestination, graph, parent)
 }

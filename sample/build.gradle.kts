@@ -47,6 +47,7 @@ kotlin {
         commonMain.dependencies {
             implementation(projects.navigation.dialog)
             implementation(projects.navigation.jetpack)
+            implementation(projects.navigation.nav3)
             implementation(projects.navigation.voyager)
 
             implementation(libs.compose.components.resources)

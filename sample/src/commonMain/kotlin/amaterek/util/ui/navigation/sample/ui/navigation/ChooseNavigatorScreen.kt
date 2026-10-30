@@ -24,6 +24,7 @@ fun ChooseNavigatorScreen(platformNavigation: PlatformNavigation) {
         null -> ChooseNavigatorView { chosenNavigator.value = it }
         ChosenNavigator.Voyager -> ComposeApp(platformNavigation, GetVoyagerNavigationHost())
         ChosenNavigator.Jetpack -> ComposeApp(platformNavigation, GetJetpackNavigationHost())
+        ChosenNavigator.Nav3 -> ComposeApp(platformNavigation, GetNav3NavigationHost())
     }
 }
 
@@ -50,10 +51,17 @@ private fun ChooseNavigatorView(
         ) {
             Text("Jetpack Navigator")
         }
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = { onNavigatorChosen(ChosenNavigator.Nav3) },
+        ) {
+            Text("Navigation 3 Navigator")
+        }
     }
 }
 
 private enum class ChosenNavigator {
     Voyager,
     Jetpack,
+    Nav3,
 }
