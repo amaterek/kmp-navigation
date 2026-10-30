@@ -45,6 +45,7 @@ kotlin {
         val desktopMain by getting
 
         commonMain.dependencies {
+            implementation(projects.navigation.dialog)
             implementation(projects.navigation.jetpack)
             implementation(projects.navigation.voyager)
 

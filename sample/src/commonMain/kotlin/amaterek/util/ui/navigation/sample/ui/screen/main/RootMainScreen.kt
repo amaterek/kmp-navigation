@@ -6,6 +6,7 @@ import amaterek.util.ui.navigation.LocalNavigator
 import amaterek.util.ui.navigation.canNavigateBack
 import amaterek.util.ui.navigation.currentDestinationFlow
 import amaterek.util.ui.navigation.destination.popUpTo
+import amaterek.util.ui.navigation.dialog.animatedDialog
 import amaterek.util.ui.navigation.navigateBack
 import amaterek.util.ui.navigation.navigationGraph
 import amaterek.util.ui.navigation.popUpTo
@@ -13,6 +14,7 @@ import amaterek.util.ui.navigation.resultFlow
 import amaterek.util.ui.navigation.sample.LocalNavigatorProvider
 import amaterek.util.ui.navigation.sample.ui.navigation.LifecycleLogger
 import amaterek.util.ui.navigation.sample.ui.screen.main.home.HomeDestination
+import amaterek.util.ui.navigation.sample.ui.screen.main.home.bottomsheet.HomeBottomSheetDestination
 import amaterek.util.ui.navigation.sample.ui.screen.main.home.forresultdialog.HomeForResultDialogDestination
 import amaterek.util.ui.navigation.sample.ui.screen.main.home.multiple.HomeMultipleDestination
 import amaterek.util.ui.navigation.sample.ui.screen.main.other.OtherDestination
@@ -63,6 +65,7 @@ internal fun RootMainScreen() {
             screen<HomeDestination>()
             screen<OtherDestination>()
             dialog<HomeForResultDialogDestination>(properties = HomeForResultDialogDestination.dialogProperties)
+            animatedDialog<HomeBottomSheetDestination>()
             screen<HomeMultipleDestination>()
         },
         parent = navigator,

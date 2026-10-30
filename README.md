@@ -32,6 +32,9 @@ dependencies {
 
     // For Voyager implementation
     implementation 'com.github.amaterek.kmp-navigation:voyager:{version}'
+
+    // For animated dialogs
+    implementation 'com.github.amaterek.kmp-navigation:dialog:{version}'
 }
 ```
 
@@ -263,6 +266,61 @@ fun Content() {
     )
 }
 ```
+
+### Animated dialogs
+
+The `dialog` module adds dialogs that animate their content out before they are popped:
+
+- `ClosingDialogDestination` closes in two steps: `close(result)` or `dismiss()` starts closing, and the content calls
+  `onClosed()` when its exit animation is finished, which pops the dialog and delivers the result. Navigating back
+  with `LocalNavigator` in the content closes the dialog the same way.
+- `AnimatedDialogDestination` implements it with content over a scrim. The content enters with `transition.enter` and
+  exits with `transition.popExit`, so screen transitions can be used. The scrim (`scrimColor`, `scrimTransition`),
+  `contentAlignment`, `dismissOnBackPress` and `dismissOnClickOutside` can be overridden.
+
+They are added to the graph with `animatedDialog()`, which uses full screen dialog properties without the platform's
+animation and scrim.
+
+A bottom sheet, for example:
+
+```kotlin
+@Serializable
+data object MyBottomSheetDestination : AnimatedDialogDestination<MyBottomSheetDestination.Result>() {
+
+    override val contentAlignment: Alignment
+        get() = Alignment.BottomCenter
+
+    // Content transition (fade by default)
+    override val transition: ScreenTransition
+        get() = SlideVerticallyScreenTransition
+
+    // Optionally override the scrim
+    override val scrimColor: Color
+        get() = Color.Black.copy(alpha = 0.5f)
+
+    @Composable
+    override fun ClosingDialogScope<Result>.AnimatedDialogContent() {
+        Button(onClick = { close(Result.Ok) }) {
+            Text("Ok")
+        }
+    }
+
+    // Result delivered on back, click outside or navigating back without result
+    override fun dismissResult() = Result.Cancel
+
+    enum class Result {
+        Cancel,
+        Ok,
+    }
+}
+
+val MyGraph = navigationGraph {
+    // ...
+    animatedDialog<MyBottomSheetDestination>()
+}
+```
+
+The closing state isn't saved, so a dialog that is closing when the Android activity is recreated stays open.
 
 ### More examples
 

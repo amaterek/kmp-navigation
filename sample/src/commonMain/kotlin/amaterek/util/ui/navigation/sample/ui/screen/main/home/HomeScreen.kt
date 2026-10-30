@@ -11,6 +11,7 @@ import amaterek.util.ui.navigation.sample.ui.navigation.LifecycleLogger
 import amaterek.util.ui.navigation.sample.ui.navigation.finishappdialog.AppFinishDialogIsCancelable
 import amaterek.util.ui.navigation.sample.ui.navigation.link.AppLinkDestination
 import amaterek.util.ui.navigation.sample.ui.screen.main.LocalRootNavigationResultFlow
+import amaterek.util.ui.navigation.sample.ui.screen.main.home.bottomsheet.HomeBottomSheetDestination
 import amaterek.util.ui.navigation.sample.ui.screen.main.home.forresultdialog.HomeForResultDialogDestination
 import amaterek.util.ui.navigation.sample.ui.screen.main.home.multiple.HomeMultipleDestination
 import amaterek.util.ui.navigation.sample.ui.screen.withargumentandforresult.RootWithArgumentAndForResultDestination
@@ -20,6 +21,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,6 +47,7 @@ internal fun HomeScreen() {
     val currentDestination = LocalDestination.current
 
     var forResultDialogDestinationResult by rememberSaveable { mutableStateOf<String?>(null) }
+    var bottomSheetResult by rememberSaveable { mutableStateOf<String?>(null) }
     var withArgumentAndForResultDestinationResult by rememberSaveable { mutableStateOf<String?>(null) }
     var notHandledDestinationResult by rememberSaveable { mutableStateOf<Any?>(null) }
     val navigationResultFlow = merge(
@@ -61,6 +65,8 @@ internal fun HomeScreen() {
                     is HomeForResultDialogDestination.Companion.ForResultDialogDestinationResult ->
                         forResultDialogDestinationResult = it.value
 
+                    is HomeBottomSheetDestination.Result -> bottomSheetResult = it.value
+
                     is RootWithArgumentAndForResultDestination.WithArgumentAndForResultDestinationResult ->
                         withArgumentAndForResultDestinationResult = it.value
 
@@ -71,7 +77,11 @@ internal fun HomeScreen() {
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 32.dp),
+        // verticalScroll keeps the minimum height of fillMaxSize, so the weighted spacers still center the buttons
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
     ) {
@@ -106,6 +116,13 @@ internal fun HomeScreen() {
             onClick = { navigator.navigateTo(HomeForResultDialogDestination(0)) },
         ) {
             Text("For result dialog: $forResultDialogDestinationResult\nto main navigator", textAlign = TextAlign.Center)
+        }
+
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = { navigator.navigateTo(HomeBottomSheetDestination) },
+        ) {
+            Text("Bottom sheet: $bottomSheetResult\nto main navigator", textAlign = TextAlign.Center)
         }
 
         Button(
