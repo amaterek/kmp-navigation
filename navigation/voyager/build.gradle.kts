@@ -53,8 +53,7 @@ kotlin {
             implementation(libs.jetbrains.navigationevent.compose)
 
             implementation(libs.voyager.core)
-            implementation(libs.voyager.screenmodel)
-            implementation(libs.voyager.transitions)
+            implementation(libs.voyager.navigator)
         }
         commonTest.dependencies {
             implementation(libs.coroutines.test)
