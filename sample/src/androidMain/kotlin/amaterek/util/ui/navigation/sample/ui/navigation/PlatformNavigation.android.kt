@@ -25,7 +25,7 @@ actual class PlatformNavigation actual constructor(private val context: Any) {
         when (context) {
             is Context -> {
                 try {
-                    val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com"))
+                    val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                     context.startActivity(browserIntent)
                 } catch (_: ActivityNotFoundException) {
                 }
