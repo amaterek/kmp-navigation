@@ -8,11 +8,14 @@ import amaterek.util.ui.navigation.LocalNavigator
 import amaterek.util.ui.navigation.NavigationGraph
 import amaterek.util.ui.navigation.Navigator
 import amaterek.util.ui.navigation.annotation.InternalNavigation
+import amaterek.util.ui.navigation.destination.PreviousDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.transition.FadeScreenTransition
 import amaterek.util.ui.navigation.transition.ScreenTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavBackStackEntry
@@ -23,6 +26,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 
 @Composable
 fun JetpackNavigationHost(
@@ -34,9 +40,14 @@ fun JetpackNavigationHost(
     navigator = rememberJetpackNavigator(startDestination, graph, parent, defaultTransition),
 )
 
+/**
+ * @param isPredictiveBackEnabled when `false`, a back gesture doesn't show the previous destination while it's in
+ * progress (the destination is popped when the gesture completes), e.g. for tabs that aren't a real back stack.
+ */
 @Composable
 fun JetpackNavigationHost(
     navigator: Navigator,
+    isPredictiveBackEnabled: Boolean = true,
 ) {
     navigator as JetpackNavigator
     CompositionLocalProvider(LocalNavigator provides navigator) {
@@ -47,6 +58,17 @@ fun JetpackNavigationHost(
             navigator.graph.entries.values.forEach { entry ->
                 addDestination(navigator, entry)
             }
+        }
+        if (!isPredictiveBackEnabled) {
+            // Registered after the NavHost's handler, so it receives the gesture instead and the NavHost never starts
+            // its predictive back transition
+            val currentDestination by navigator.backStack.currentDestinationFlow.collectAsState()
+            val hasPreviousDestination = remember(currentDestination) { navigator.backStack.size > 1 }
+            NavigationBackHandler(
+                state = rememberNavigationEventState(currentInfo = NavigationEventInfo.None),
+                isBackEnabled = hasPreviousDestination,
+                onBackCompleted = { navigator.navigateTo(PreviousDestination) },
+            )
         }
     }
 }

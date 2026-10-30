@@ -246,6 +246,9 @@ fun Content() {
 Navigation hosts handle system back (Android back button or gesture, iOS back swipe, Escape on desktop) with
 [navigation event](https://developer.android.com/guide/navigation/navigation-event/handle-back): they navigate to
 `PreviousDestination` while the navigator can go back, otherwise the back is handled by the parent host or the platform.
+`JetpackNavigationHost(navigator, isPredictiveBackEnabled = false)` pops only when the back gesture completes, without
+showing the previous destination during it (e.g. for tabs that aren't a real back stack). The Voyager host always does
+that, as Voyager has no predictive back animation.
 
 A destination can handle back itself with `NavigationBackHandler`, which takes precedence over the host:
 

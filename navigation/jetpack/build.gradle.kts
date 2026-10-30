@@ -47,6 +47,7 @@ kotlin {
 
             implementation(libs.compose.runtime)
             implementation(libs.jetbrains.navigation.compose)
+            implementation(libs.jetbrains.navigationevent.compose)
             implementation(libs.kotlinx.serialization.json)
         }
     }
