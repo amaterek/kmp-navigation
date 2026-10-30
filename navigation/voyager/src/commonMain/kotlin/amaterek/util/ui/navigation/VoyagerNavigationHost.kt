@@ -13,14 +13,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.pointer.pointerInput
@@ -37,8 +35,6 @@ import androidx.navigationevent.compose.rememberNavigationEventState
 import cafe.adriel.voyager.core.annotation.InternalVoyagerApi
 import cafe.adriel.voyager.core.stack.StackEvent
 import cafe.adriel.voyager.navigator.NavigatorDisposeBehavior
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import cafe.adriel.voyager.navigator.Navigator as VNavigator
 
 @NonRestartableComposable
@@ -47,8 +43,9 @@ fun VoyagerNavigationHost(
     startBackStack: List<ScreenDestination>,
     graph: NavigationGraph,
     parent: Navigator? = null,
+    defaultTransition: ScreenTransition = FadeScreenTransition,
 ) = VoyagerNavigationHost(
-    navigator = rememberVoyagerNavigator(startBackStack, graph, parent),
+    navigator = rememberVoyagerNavigator(startBackStack, graph, parent, defaultTransition),
 )
 
 @NonRestartableComposable
@@ -85,7 +82,8 @@ fun VoyagerNavigationHost(
             disposeBehavior = NavigatorDisposeBehavior(disposeSteps = false),
             onBackPressed = null,
         ) { vNavigator ->
-            navigator.navHostController = vNavigator
+            // In the composition, so the screens can navigate in their first composition
+            remember(vNavigator) { navigator.attach(vNavigator) }
 
             DisposeRemovedEntries(vNavigator, entryOwners)
 
@@ -96,12 +94,6 @@ fun VoyagerNavigationHost(
                 isBackEnabled = vNavigator.canPop,
                 onBackCompleted = { navigator.navigateTo(PreviousDestination) },
             )
-
-            LaunchedEffect(vNavigator.key) {
-                snapshotFlow { navigator.destinationOf(vNavigator.lastItem as VoyagerBackStackEntry) }
-                    .onEach { navigator.currentDestinationFlow.value = it }
-                    .launchIn(this)
-            }
 
             val screenItem by remember {
                 derivedStateOf {

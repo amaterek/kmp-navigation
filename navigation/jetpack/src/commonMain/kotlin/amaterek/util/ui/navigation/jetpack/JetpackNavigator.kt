@@ -3,6 +3,7 @@ package amaterek.util.ui.navigation.jetpack
 import amaterek.util.ui.navigation.NavigationGraph
 import amaterek.util.ui.navigation.Navigator
 import amaterek.util.ui.navigation.annotation.InternalNavigation
+import amaterek.util.ui.navigation.destination.Destination
 import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.NavigatorDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
@@ -58,13 +59,17 @@ class JetpackNavigator(
         private val _currentDestinationFlow = MutableStateFlow(startDestination)
 
         init {
+            // For the back stack changes of the NavHost, e.g. system back
             navHostController.currentBackStackEntryFlow
-                .onEach { navBackStackEntry ->
-                    val currentDestination = getDestination(navBackStackEntry)
-                    purgeRemovedEntries()
-                    _currentDestinationFlow.value = currentDestination
-                }
+                .onEach { updateCurrentDestination() }
                 .launchIn(coroutineScope)
+        }
+
+        fun updateCurrentDestination() {
+            val navBackStackEntry = navHostController.currentBackStackEntry ?: return
+            val currentDestination = getDestination(navBackStackEntry)
+            purgeRemovedEntries()
+            _currentDestinationFlow.value = currentDestination
         }
 
         override val size: Int
@@ -93,7 +98,15 @@ class JetpackNavigator(
         }
     }
 
-    override val backStack: Navigator.BackStack = JetpackBackStack()
+    private val jetpackBackStack = JetpackBackStack()
+
+    override val backStack: Navigator.BackStack = jetpackBackStack
+
+    // Updated at once, so the current destination of the next navigation in the same frame is right
+    override fun navigateTo(destination: Destination) {
+        super.navigateTo(destination)
+        jetpackBackStack.updateCurrentDestination()
+    }
 
     override fun getResultFlow(navigationResultHandler: Any): Flow<Any?> {
         // JetpackNavigationHost provides the NavBackStackEntry as the navigation result handler

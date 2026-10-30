@@ -3,6 +3,7 @@
 package amaterek.util.ui.navigation
 
 import amaterek.util.ui.navigation.annotation.InternalNavigation
+import amaterek.util.ui.navigation.destination.Destination
 import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.NavigatorDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
@@ -22,7 +23,7 @@ import kotlinx.serialization.json.Json
 import kotlin.jvm.Transient
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
-import cafe.adriel.voyager.navigator.Navigator as VoyagerHavHostController
+import cafe.adriel.voyager.navigator.Navigator as VoyagerNavHostController
 
 @Suppress("TooManyFunctions")
 @InternalNavigation
@@ -38,9 +39,25 @@ class VoyagerNavigator internal constructor(
 
     private val entriesByName = graph.entries.values.associateBy { it.name }
 
-    // HACK Nullable: For Voyager - navigator is available later
-    internal var navHostController: VoyagerHavHostController? = null
-    internal val currentDestinationFlow = MutableStateFlow(startBackStack.last())
+    // Voyager creates its navigator in the composition of VoyagerNavigationHost, see attach
+    private var navHostController: VoyagerNavHostController? = null
+
+    private val currentDestinationFlow = MutableStateFlow(startBackStack.last())
+
+    internal fun attach(navHostController: VoyagerNavHostController) {
+        this.navHostController = navHostController
+        updateCurrentDestination()
+    }
+
+    // Updated at once, so the current destination of the next navigation in the same frame is right
+    override fun navigateTo(destination: Destination) {
+        super.navigateTo(destination)
+        updateCurrentDestination()
+    }
+
+    private fun updateCurrentDestination() {
+        navHostController?.let { currentDestinationFlow.value = it.lastItem.destination }
+    }
 
     internal fun dialogPropertiesOf(destination: ScreenDestination): DialogProperties? =
         graph.entries[destination::class]?.dialogProperties
@@ -62,19 +79,23 @@ class VoyagerNavigator internal constructor(
     private val Screen.destination: ScreenDestination
         get() = destinationOf(this as VoyagerBackStackEntry)
 
+    // The start back stack until VoyagerNavigationHost is composed
     private inner class VoyagerBackStack : Navigator.BackStack {
 
+        private val destinations: List<ScreenDestination>
+            get() = navHostController?.items?.map { it.destination } ?: startBackStack
+
         override val size: Int
-            get() = navHostController?.size ?: 0
+            get() = navHostController?.size ?: startBackStack.size
 
         override val currentDestinationFlow: StateFlow<ScreenDestination> =
             this@VoyagerNavigator.currentDestinationFlow.asStateFlow()
 
         override fun lastIndexOf(destination: ScreenDestination): Int =
-            navHostController?.items?.indexOfLast { it.destination == destination } ?: -1
+            destinations.indexOfLast { it == destination }
 
         override fun lastIndexOf(destination: GraphDestination): Int =
-            navHostController?.items?.indexOfLast { it.destination::class == destination } ?: -1
+            destinations.indexOfLast { it::class == destination }
     }
 
     override val backStack: Navigator.BackStack = VoyagerBackStack()
@@ -162,7 +183,7 @@ class VoyagerNavigator internal constructor(
     }
 
     // Like Jetpack navigation, a screen pushed above dialogs pops them, so back doesn't return to them
-    private fun VoyagerHavHostController.pushEntry(entry: VoyagerBackStackEntry) {
+    private fun VoyagerNavHostController.pushEntry(entry: VoyagerBackStackEntry) {
         if (!entry.isDialog) {
             while (size > 1 && lastItem.isDialog) pop()
         }
@@ -170,7 +191,7 @@ class VoyagerNavigator internal constructor(
     }
 
     // Likewise a screen replacing the current destination pops the dialogs below it
-    private fun VoyagerHavHostController.replaceEntry(entry: VoyagerBackStackEntry) {
+    private fun VoyagerNavHostController.replaceEntry(entry: VoyagerBackStackEntry) {
         val keptIndex = if (entry.isDialog) items.lastIndex - 1 else items.dropLast(1).indexOfLast { !it.isDialog }
         when (keptIndex) {
             items.lastIndex - 1 -> replace(entry)
@@ -186,7 +207,7 @@ class VoyagerNavigator internal constructor(
     private val Screen.isDialog: Boolean
         get() = dialogPropertiesOf(destination) != null
 
-    private inline fun doIfNavControllerAvailableOrThrow(action: VoyagerHavHostController.() -> Unit) {
+    private inline fun doIfNavControllerAvailableOrThrow(action: VoyagerNavHostController.() -> Unit) {
         navHostController?.action() ?: error("No Voyager navigation host")
     }
 }

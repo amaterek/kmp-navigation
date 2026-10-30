@@ -54,8 +54,13 @@ abstract class CommonNavigationTest(
             assertSame(backStack.currentDestinationFlow, backStack.currentDestinationFlow)
         }
 
-        expectDestination(ObjectDestination2) { navigateTo(it) }
-        runNavigator { assertEquals(ObjectDestination2, backStack.currentDestinationFlow.value) }
+        runNavigator {
+            navigateTo(ObjectDestination2)
+            // At once, so the current destination of the next navigation in the same frame is right
+            assertEquals(ObjectDestination2, backStack.currentDestinationFlow.value)
+            navigateBack()
+            assertEquals(ObjectDestination1, backStack.currentDestinationFlow.value)
+        }
     }
 
     @Test
