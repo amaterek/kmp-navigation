@@ -306,6 +306,28 @@ fun Content() {
 }
 ```
 
+### View models and lifecycle
+
+Every destination in the back stack has its own `ViewModelStoreOwner` and `LifecycleOwner`, with all navigators on
+all platforms, so `viewModel()` (also with `SavedStateHandle`) is scoped to the destination: its view models survive
+until the destination is removed from the back stack, also while other destinations are displayed above it.
+
+```kotlin
+@Serializable
+data object MyDestination : ScreenDestination {
+
+    @Composable
+    override fun Content() {
+        val viewModel = viewModel { MyViewModel(createSavedStateHandle()) }
+        // ...
+    }
+}
+```
+
+The lifecycle of a destination is RESUMED when it's on top, STARTED below a dialog and CREATED while another
+destination is displayed above it. The Navigation 3 navigator destroys the lifecycle of a destination it doesn't
+display and creates a new one when it's displayed again, its view models are kept.
+
 ### Animated dialogs
 
 The `dialog` module adds dialogs that animate their content out before they are popped:

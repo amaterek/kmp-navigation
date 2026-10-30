@@ -70,6 +70,8 @@ kotlin {
             implementation(projects.navigation.voyager)
             implementation(libs.compose.material3)
             implementation(libs.compose.ui.test)
+            implementation(libs.jetbrains.lifecycle.runtime.compose)
+            implementation(libs.jetbrains.lifecycle.viewmodel.compose)
             implementation(libs.kotlin.test)
         }
 
@@ -86,7 +88,6 @@ kotlin {
             implementation(libs.androidx.compose.ui.test.manifest)
             implementation(libs.androidx.test.junit)
             implementation(libs.androidx.test.runner)
-            implementation(libs.jetbrains.lifecycle.viewmodel.compose)
         }
     }
 }

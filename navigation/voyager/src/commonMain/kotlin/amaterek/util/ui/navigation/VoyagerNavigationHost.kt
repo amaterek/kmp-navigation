@@ -15,6 +15,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NonRestartableComposable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -27,6 +28,9 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.rememberViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.rememberViewModelStoreProvider
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
@@ -64,6 +68,14 @@ fun VoyagerNavigationHost(
     navigator: Navigator,
 ) {
     navigator as VoyagerNavigator
+    val hostLifecycleOwner = LocalLifecycleOwner.current
+    val viewModelStoreProvider = rememberViewModelStoreProvider()
+    val entryOwners = remember(hostLifecycleOwner, viewModelStoreProvider) {
+        VoyagerEntryOwners(hostLifecycleOwner, viewModelStoreProvider)
+    }
+    DisposableEffect(entryOwners) {
+        onDispose { entryOwners.disposeLifecycles() }
+    }
     CompositionLocalProvider(
         LocalNavigator provides navigator,
     ) {
@@ -75,7 +87,7 @@ fun VoyagerNavigationHost(
         ) { vNavigator ->
             navigator.navHostController = vNavigator
 
-            DisposeRemovedEntries(vNavigator)
+            DisposeRemovedEntries(vNavigator, entryOwners)
 
             // Voyager handles back only on Android. Registered before the screens, so their handlers and the ones
             // of nested hosts take precedence.
@@ -109,27 +121,29 @@ fun VoyagerNavigationHost(
 
             // Like Jetpack navigation, all dialogs above the screen are shown and everything below the top one is
             // paused
-            MaxLifecycle(if (dialogItems.isEmpty()) Lifecycle.State.RESUMED else Lifecycle.State.STARTED) {
-                ScreenItem(vNavigator, navigator, screenItem)
-            }
+            ScreenItem(vNavigator, navigator, entryOwners, screenItem, isBelowDialog = dialogItems.isNotEmpty())
+            DialogItems(vNavigator, navigator, entryOwners, dialogItems)
+        }
+    }
+}
 
-            val hostLifecycleOwner = LocalLifecycleOwner.current
-            dialogItems.forEach { dialogItem ->
-                key(dialogItem) {
-                    val maxLifecycle =
-                        if (dialogItem === dialogItems.last()) Lifecycle.State.RESUMED else Lifecycle.State.STARTED
-                    Dialog(
-                        onDismissRequest = { navigator.navigateTo(PreviousDestination) },
-                        properties = navigator.dialogPropertiesOf(navigator.destinationOf(dialogItem))
-                            ?: DialogProperties(),
-                    ) {
-                        // The host's lifecycle, like a Jetpack navigation dialog entry: an Android dialog provides
-                        // the lifecycle of its window to its content
-                        MaxLifecycle(maxLifecycle, parent = hostLifecycleOwner) {
-                            vNavigator.ScreenContent(navigator, dialogItem)
-                        }
-                    }
-                }
+@InternalNavigation
+@Composable
+private fun DialogItems(
+    vNavigator: VNavigator,
+    navigator: VoyagerNavigator,
+    entryOwners: VoyagerEntryOwners,
+    dialogItems: List<VoyagerBackStackEntry>,
+) {
+    dialogItems.forEach { dialogItem ->
+        key(dialogItem) {
+            val maxLifecycle =
+                if (dialogItem === dialogItems.last()) Lifecycle.State.RESUMED else Lifecycle.State.STARTED
+            Dialog(
+                onDismissRequest = { navigator.navigateTo(PreviousDestination) },
+                properties = navigator.dialogPropertiesOf(navigator.destinationOf(dialogItem)) ?: DialogProperties(),
+            ) {
+                vNavigator.ScreenContent(navigator, entryOwners, dialogItem, maxLifecycle)
             }
         }
     }
@@ -157,14 +171,17 @@ fun rememberVoyagerNavigator(
 
 @OptIn(InternalVoyagerApi::class)
 @Composable
-private fun DisposeRemovedEntries(vNavigator: VNavigator) {
+private fun DisposeRemovedEntries(vNavigator: VNavigator, entryOwners: VoyagerEntryOwners) {
     val entries = vNavigator.items
     DisposableEffect(entries) {
         onDispose {
             val newEntries = vNavigator.items
             entries
                 .filter { entry -> newEntries.none { it === entry } }
-                .forEach { vNavigator.dispose(it) }
+                .forEach {
+                    vNavigator.dispose(it)
+                    entryOwners.dispose(it as VoyagerBackStackEntry)
+                }
         }
     }
 }
@@ -172,7 +189,13 @@ private fun DisposeRemovedEntries(vNavigator: VNavigator) {
 @OptIn(ExperimentalAnimationApi::class)
 @InternalNavigation
 @Composable
-private fun ScreenItem(vNavigator: VNavigator, navigator: VoyagerNavigator, screen: VoyagerBackStackEntry) {
+private fun ScreenItem(
+    vNavigator: VNavigator,
+    navigator: VoyagerNavigator,
+    entryOwners: VoyagerEntryOwners,
+    screen: VoyagerBackStackEntry,
+    isBelowDialog: Boolean,
+) {
     AnimatedContent(
         modifier = Modifier.fillMaxSize(),
         targetState = screen,
@@ -204,9 +227,10 @@ private fun ScreenItem(vNavigator: VNavigator, navigator: VoyagerNavigator, scre
     ) { currentItem ->
         val isTransitionRunning = transition.isRunning
 
-        // TODO Update destination's lifecycle state
-
-        vNavigator.ScreenContent(navigator, currentItem)
+        // The screen leaving with the transition is paused, like below a dialog
+        val maxLifecycle =
+            if (currentItem === screen && !isBelowDialog) Lifecycle.State.RESUMED else Lifecycle.State.STARTED
+        vNavigator.ScreenContent(navigator, entryOwners, currentItem, maxLifecycle)
         if (isTransitionRunning) {
             Box(
                 modifier = Modifier
@@ -220,13 +244,31 @@ private fun ScreenItem(vNavigator: VNavigator, navigator: VoyagerNavigator, scre
 
 @InternalNavigation
 @Composable
-private fun VNavigator.ScreenContent(navigator: VoyagerNavigator, screen: VoyagerBackStackEntry) {
+private fun VNavigator.ScreenContent(
+    navigator: VoyagerNavigator,
+    entryOwners: VoyagerEntryOwners,
+    screen: VoyagerBackStackEntry,
+    maxLifecycle: Lifecycle.State,
+) {
     CompositionLocalProvider(
         LocalDestination provides navigator.destinationOf(screen),
         LocalNavigationResultHandler provides screen,
     ) {
         saveableState("currentScreen", screen) {
-            screen.Content()
+            val lifecycleOwner = entryOwners.lifecycleOwnerOf(screen)
+            SideEffect { lifecycleOwner.maxState = maxLifecycle }
+            DisposableEffect(lifecycleOwner) {
+                onDispose { lifecycleOwner.maxState = Lifecycle.State.CREATED }
+            }
+            // The saved state registry of the screen's saveable state, so view models can use SavedStateHandle
+            val viewModelStoreOwner = rememberViewModelStoreOwner(screen.key, entryOwners.viewModelStoreProvider)
+            // Inside Voyager's saveable state, which provides the lifecycle and view model store of its Android owner
+            CompositionLocalProvider(
+                LocalLifecycleOwner provides lifecycleOwner,
+                LocalViewModelStoreOwner provides viewModelStoreOwner,
+            ) {
+                screen.Content()
+            }
         }
     }
 }
