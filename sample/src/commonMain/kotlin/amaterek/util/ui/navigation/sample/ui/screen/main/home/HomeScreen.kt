@@ -2,13 +2,13 @@ package amaterek.util.ui.navigation.sample.ui.screen.main.home
 
 import amaterek.util.log.Log
 import amaterek.util.ui.navigation.LocalDestination
-import amaterek.util.ui.navigation.LocalNavigationResultFlow
 import amaterek.util.ui.navigation.LocalNavigator
 import amaterek.util.ui.navigation.backhandler.BackHandler
 import amaterek.util.ui.navigation.destination.redirectToParent
 import amaterek.util.ui.navigation.destination.redirectToParentIfNotInGraph
 import amaterek.util.ui.navigation.navigateBack
 import amaterek.util.ui.navigation.navigateBackWithResult
+import amaterek.util.ui.navigation.resultFlow
 import amaterek.util.ui.navigation.sample.ui.navigation.LifecycleLogger
 import amaterek.util.ui.navigation.sample.ui.navigation.finishappdialog.AppFinishDialogIsCancelable
 import amaterek.util.ui.navigation.sample.ui.navigation.link.AppLinkDestination
@@ -50,7 +50,7 @@ internal fun HomeScreen() {
     var notHandledDestinationResult by rememberSaveable { mutableStateOf<Any?>(null) }
     val navigationResultFlow = merge(
         LocalRootNavigationResultFlow.current,
-        LocalNavigationResultFlow.current,
+        navigator.resultFlow,
     )
 
     LifecycleLogger()

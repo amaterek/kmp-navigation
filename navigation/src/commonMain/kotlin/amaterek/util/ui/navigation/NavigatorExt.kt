@@ -2,6 +2,7 @@
 
 package amaterek.util.ui.navigation
 
+import amaterek.util.ui.navigation.annotation.InternalNavigation
 import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.PopUpToDestination
 import amaterek.util.ui.navigation.destination.PopUpToFirstDestination
@@ -12,10 +13,16 @@ import amaterek.util.ui.navigation.destination.popUpToFirst
 import amaterek.util.ui.navigation.destination.replace
 import amaterek.util.ui.navigation.destination.replaceAll
 import amaterek.util.ui.navigation.destination.withResult
-import amaterek.util.ui.navigation.internal.NavigationResultFlow
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.NonRestartableComposable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 inline fun Navigator.canNavigateBack() =
     backStack.size > 1
@@ -89,9 +96,20 @@ inline fun Navigator.popUpToWithResult(destination: ScreenDestination, result: A
 inline val Navigator.currentDestinationFlow: StateFlow<ScreenDestination>
     get() = backStack.currentDestinationFlow
 
-@Suppress("UnusedReceiverParameter")
-@Deprecated("Will be removed", replaceWith = ReplaceWith("LocalNavigationResultFlow"))
-inline val Navigator.resultFlow: NavigationResultFlow
-    @ReadOnlyComposable
+@Suppress("FlowOperatorInvokedInComposition")
+@OptIn(InternalNavigation::class)
+inline val Navigator.resultFlow: Flow<Any>
     @Composable
-    get() = LocalNavigationResultFlow.current
+    get() = getResultFlow(LocalNavigationResultHandler.current)
+        .filterNotNull()
+        .onEach { setResult(null) }
+
+@Composable
+@NonRestartableComposable
+fun ObserveNavigationResult(action: (Any) -> Unit) {
+    val resultFlow = LocalNavigator.current.resultFlow
+    val latestAction by rememberUpdatedState(action)
+    LaunchedEffect(resultFlow) {
+        resultFlow.onEach(latestAction).launchIn(this)
+    }
+}

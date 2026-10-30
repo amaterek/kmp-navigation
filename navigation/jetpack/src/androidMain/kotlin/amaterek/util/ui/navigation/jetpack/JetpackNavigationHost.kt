@@ -4,7 +4,7 @@
 package amaterek.util.ui.navigation.jetpack
 
 import amaterek.util.ui.navigation.LocalDestination
-import amaterek.util.ui.navigation.LocalNavigationResultFlow
+import amaterek.util.ui.navigation.LocalNavigationResultHandler
 import amaterek.util.ui.navigation.LocalNavigator
 import amaterek.util.ui.navigation.Navigator
 import amaterek.util.ui.navigation.annotation.InternalNavigation
@@ -123,10 +123,9 @@ private inline fun DestinationContent(
     navigator: JetpackNavigator,
 ) {
     val destination = remember { navigator.getDestination(navBackStackEntry, destinationClass) }
-    val navigationResultFlow = remember { JetpackNavigationResultFlow(navBackStackEntry) }
     CompositionLocalProvider(
         LocalDestination provides destination,
-        LocalNavigationResultFlow provides navigationResultFlow,
+        LocalNavigationResultHandler provides navBackStackEntry,
     ) {
         destination.Content()
     }

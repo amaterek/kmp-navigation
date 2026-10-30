@@ -16,6 +16,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.navOptions
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -98,9 +99,15 @@ class JetpackNavigator(
 
     override val backStack: Navigator.BackStack = JetpackBackStack()
 
-    override fun setResultForCurrentDestination(result: Any) {
+    override fun getResultFlow(navigationResultHandler: Any): Flow<Any?> {
+        // JetpackNavigationHost provides the NavBackStackEntry as the navigation result handler
+        val backStackEntry = navigationResultHandler as NavBackStackEntry
+        return backStackEntry.savedStateHandle.getStateFlow(ResultFlowKey, null)
+    }
+
+    override fun setResult(result: Any?) {
         val currentBackStackEntry = navHostController.currentBackStackEntry ?: return
-        currentBackStackEntry.emitNavigationResult(result)
+        currentBackStackEntry.savedStateHandle[ResultFlowKey] = result
     }
 
     override fun doNavigateBack() {
@@ -177,3 +184,6 @@ private inline fun NavController.navigateToScreenDestination(
 ) {
     navigate(destination.route, builder?.let { navOptions(it) })
 }
+
+@Suppress("TopLevelPropertyNaming")
+private const val ResultFlowKey = "navigation_result"

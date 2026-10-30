@@ -7,21 +7,16 @@ import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.NavigatorDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.internal.BaseNavigator
-import amaterek.util.ui.navigation.internal.NavigationResultEmitter
-import amaterek.util.ui.navigation.internal.NavigationResultFlow
 import amaterek.util.ui.navigation.serialization.SkipForSerialization
 import amaterek.util.ui.navigation.transition.ScreenTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.screen.ScreenKey
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
 import cafe.adriel.voyager.navigator.Navigator as VoyagerHavHostController
 
 @InternalNavigation
@@ -54,9 +49,15 @@ class VoyagerNavigator internal constructor(
 
     override val backStack: Navigator.BackStack = VoyagerBackStack()
 
-    override fun setResultForCurrentDestination(result: Any) {
-        val item = navHostController?.lastItem as NavigationResultEmitter
-        item.emitNavigationResult(result)
+    override fun getResultFlow(navigationResultHandler: Any): Flow<Any?> {
+        // VoyagerNavigationHost provides the VoyagerBackStackEntry as the navigation result handler
+        val backStackEntry = navigationResultHandler as VoyagerBackStackEntry
+        return backStackEntry.result
+    }
+
+    override fun setResult(result: Any?) {
+        val currentBackStackEntry = navHostController?.lastItem as? VoyagerBackStackEntry ?: return
+        currentBackStackEntry.result.value = result
     }
 
     override fun doNavigateBack() {
@@ -138,20 +139,10 @@ class VoyagerNavigator internal constructor(
 @Stable
 internal class VoyagerBackStackEntry(
     internal val destination: ScreenDestination,
-) : Screen, NavigationResultFlow, NavigationResultEmitter {
+) : Screen {
 
     @delegate:SkipForSerialization
-    private val resultChannel: Channel<Any> by lazy {
-        Channel(onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    }
-
-    override suspend fun collect(collector: FlowCollector<Any>) {
-        resultChannel.receiveAsFlow().collect(collector)
-    }
-
-    override fun emitNavigationResult(result: Any) {
-        resultChannel.trySend(result)
-    }
+    internal val result: MutableStateFlow<Any?> by lazy { MutableStateFlow(null) }
 
     override val key: ScreenKey = destination.toString() // FIXME check if it is ok?
 

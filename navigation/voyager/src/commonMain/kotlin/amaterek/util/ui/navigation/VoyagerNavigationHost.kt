@@ -171,7 +171,7 @@ private fun ScreenItem(vNavigator: VNavigator, screen: VoyagerBackStackEntry, de
 private fun VNavigator.ScreenContent(screen: VoyagerBackStackEntry) {
     CompositionLocalProvider(
         LocalDestination provides screen.destination,
-        LocalNavigationResultFlow provides screen,
+        LocalNavigationResultHandler provides screen,
     ) {
         saveableState("currentScreen", screen) {
             screen.Content()
