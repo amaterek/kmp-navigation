@@ -8,7 +8,6 @@ import amaterek.util.ui.navigation.destination.NavigatorDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.internal.BaseNavigator
 import amaterek.util.ui.navigation.transition.ScreenTransition
-import android.annotation.SuppressLint
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -24,8 +23,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 
-@Suppress("TooManyFunctions")
-@SuppressLint("RestrictedApi")
+@Suppress("TooManyFunctions", "RestrictedApi")
 @InternalNavigation
 class JetpackNavigator(
     private val startDestination: ScreenDestination,

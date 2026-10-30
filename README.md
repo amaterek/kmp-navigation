@@ -27,7 +27,7 @@ Then add this to your dependencies
 dependencies {
     implementation 'com.github.amaterek.kmp-navigation:navigation:{version}'
 
-    // For Jetpack implementation (Android only)
+    // For Jetpack (Navigation 2) implementation
     implementation 'com.github.amaterek.kmp-navigation:jetpack:{version}'
 
     // For Voyager implementation

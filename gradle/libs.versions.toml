@@ -13,7 +13,7 @@ android-minSdk = "26"
 android-targetSdk = "37"
 androidx-activity-compose = "1.13.0"
 androidx-appcompat = "1.8.0"
-androidx-navigation = "2.10.2"
+jetbrains-navigation = "2.10.0"
 androidx-lifecycle = "2.11.0"
 voyager = "2.2.21-1.10.3"
 
@@ -35,7 +35,7 @@ coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity-compose" }
-androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "androidx-navigation" }
+jetbrains-navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "jetbrains-navigation" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
 androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "androidx-compose" }
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose-multiplatform" }

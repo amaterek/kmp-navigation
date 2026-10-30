@@ -44,11 +44,9 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(projects.navigation)
-        }
 
-        androidMain.dependencies {
             implementation(libs.compose.runtime)
-            implementation(libs.androidx.navigation.compose)
+            implementation(libs.jetbrains.navigation.compose)
             implementation(libs.kotlinx.serialization.json)
         }
     }
