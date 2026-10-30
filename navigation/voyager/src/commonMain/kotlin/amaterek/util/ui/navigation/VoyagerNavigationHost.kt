@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.derivedStateOf
@@ -31,6 +32,7 @@ import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import cafe.adriel.voyager.core.annotation.InternalVoyagerApi
 import cafe.adriel.voyager.core.stack.StackEvent
+import cafe.adriel.voyager.navigator.NavigatorDisposeBehavior
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import cafe.adriel.voyager.navigator.Navigator as VNavigator
@@ -66,10 +68,14 @@ fun VoyagerNavigationHost(
         LocalNavigator provides navigator,
     ) {
         VNavigator(
-            screens = navigator.startBackStack.map { navigator.backStackEntryOf(it) },
+            screens = remember(navigator) { navigator.startBackStack.map { navigator.backStackEntryOf(it) } },
+            // Voyager disposes the removed screens only after a pop or replace, not when a push follows them
+            disposeBehavior = NavigatorDisposeBehavior(disposeSteps = false),
             onBackPressed = null,
         ) { vNavigator ->
             navigator.navHostController = vNavigator
+
+            DisposeRemovedEntries(vNavigator)
 
             // Voyager handles back only on Android. Registered before the screens, so their handlers and the ones
             // of nested hosts take precedence.
@@ -148,6 +154,20 @@ fun rememberVoyagerNavigator(
     parent: Navigator?,
     defaultTransition: ScreenTransition = FadeScreenTransition,
 ): Navigator = remember { VoyagerNavigator(startBackStack, graph, parent, defaultTransition) }
+
+@OptIn(InternalVoyagerApi::class)
+@Composable
+private fun DisposeRemovedEntries(vNavigator: VNavigator) {
+    val entries = vNavigator.items
+    DisposableEffect(entries) {
+        onDispose {
+            val newEntries = vNavigator.items
+            entries
+                .filter { entry -> newEntries.none { it === entry } }
+                .forEach { vNavigator.dispose(it) }
+        }
+    }
+}
 
 @OptIn(ExperimentalAnimationApi::class)
 @InternalNavigation

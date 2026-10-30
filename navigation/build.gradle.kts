@@ -86,6 +86,7 @@ kotlin {
             implementation(libs.androidx.compose.ui.test.manifest)
             implementation(libs.androidx.test.junit)
             implementation(libs.androidx.test.runner)
+            implementation(libs.jetbrains.lifecycle.viewmodel.compose)
         }
     }
 }

@@ -20,6 +20,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlin.jvm.Transient
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 import cafe.adriel.voyager.navigator.Navigator as VoyagerHavHostController
 
 @Suppress("TooManyFunctions")
@@ -175,12 +177,17 @@ class VoyagerNavigator internal constructor(
 /**
  * Voyager saves its back stack with Java serialization, so the entry keeps its destination as JSON and
  * [VoyagerNavigator.destinationOf] decodes it again after the back stack is restored.
+ *
+ * Voyager keys the state, lifecycle and disposal of a screen with [key], so [id] keeps equal destinations (e.g. the
+ * same `data object` pushed twice) apart.
  */
+@OptIn(ExperimentalUuidApi::class)
 @Stable
 internal class VoyagerBackStackEntry(
     internal val name: String,
     internal val encodedDestination: String,
     destination: ScreenDestination,
+    private val id: String = Uuid.random().toString(),
 ) : Screen {
 
     @Transient
@@ -192,7 +199,7 @@ internal class VoyagerBackStackEntry(
     internal val result: MutableStateFlow<Any?>
         get() = resultFlow ?: MutableStateFlow<Any?>(null).also { resultFlow = it }
 
-    override val key: ScreenKey = "$name$encodedDestination"
+    override val key: ScreenKey = "$name:$id"
 
     @Composable
     override fun Content() {
