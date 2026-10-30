@@ -128,7 +128,7 @@ class VoyagerNavigator internal constructor(
     private fun doPopUpToCurrent(inclusive: Boolean, replaceWith: ScreenDestination?) = doIfNavControllerAvailableOrThrow {
         when {
             replaceWith == null -> if (inclusive) pop()
-            inclusive -> replace(backStackEntryOf(replaceWith))
+            inclusive -> replaceEntry(backStackEntryOf(replaceWith))
             else /* !inclusive */ -> pushEntry(backStackEntryOf(replaceWith))
         }
     }
@@ -148,7 +148,7 @@ class VoyagerNavigator internal constructor(
                 if (replaceWithEntry != null) {
                     val item = items[index]
                     popUntil { it === item }
-                    if (inclusive) replace(replaceWithEntry) else pushEntry(replaceWithEntry)
+                    if (inclusive) replaceEntry(replaceWithEntry) else pushEntry(replaceWithEntry)
                 } else {
                     val item = items[index + if (inclusive) -1 else 0]
                     popUntil { it === item }
@@ -163,11 +163,28 @@ class VoyagerNavigator internal constructor(
 
     // Like Jetpack navigation, a screen pushed above dialogs pops them, so back doesn't return to them
     private fun VoyagerHavHostController.pushEntry(entry: VoyagerBackStackEntry) {
-        if (dialogPropertiesOf(destinationOf(entry)) == null) {
-            while (size > 1 && dialogPropertiesOf(lastItem.destination) != null) pop()
+        if (!entry.isDialog) {
+            while (size > 1 && lastItem.isDialog) pop()
         }
         push(entry)
     }
+
+    // Likewise a screen replacing the current destination pops the dialogs below it
+    private fun VoyagerHavHostController.replaceEntry(entry: VoyagerBackStackEntry) {
+        val keptIndex = if (entry.isDialog) items.lastIndex - 1 else items.dropLast(1).indexOfLast { !it.isDialog }
+        when (keptIndex) {
+            items.lastIndex - 1 -> replace(entry)
+            -1 -> replaceAll(entry)
+            else -> {
+                val keptItem = items[keptIndex]
+                popUntil { it === keptItem }
+                push(entry)
+            }
+        }
+    }
+
+    private val Screen.isDialog: Boolean
+        get() = dialogPropertiesOf(destination) != null
 
     private inline fun doIfNavControllerAvailableOrThrow(action: VoyagerHavHostController.() -> Unit) {
         navHostController?.action() ?: error("No Voyager navigation host")

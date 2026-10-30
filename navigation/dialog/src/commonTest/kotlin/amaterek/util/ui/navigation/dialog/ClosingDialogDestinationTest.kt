@@ -3,6 +3,8 @@ package amaterek.util.ui.navigation.dialog
 import amaterek.util.ui.navigation.LocalNavigator
 import amaterek.util.ui.navigation.Navigator
 import amaterek.util.ui.navigation.destination.ScreenDestination
+import amaterek.util.ui.navigation.destination.popUpTo
+import amaterek.util.ui.navigation.destination.replace
 import amaterek.util.ui.navigation.navigateBack
 import amaterek.util.ui.navigation.navigateBackWithResult
 import amaterek.util.ui.navigation.navigationGraph
@@ -134,6 +136,44 @@ abstract class ClosingDialogDestinationTest(private val host: TestNavigationHost
         composeUiTest.waitForIdle()
         composeUiTest.onNodeWithTag(DialogTag).assertDoesNotExist()
         composeUiTest.onNodeWithTag(ScreenNameTag).assertTextEquals(TestScreenDestination1.name)
+    }
+
+    @Test
+    fun popsDialogsWhenScreenReplacesDialogAboveThem() = test {
+        openDialog(ResultDialogDestination)
+        composeUiTest.runOnUiThread { navigator.navigateTo(NoResultDialogDestination) }
+        composeUiTest.waitForIdle()
+
+        composeUiTest.runOnUiThread { navigator.navigateTo(TestScreenDestination2.replace()) }
+        composeUiTest.waitForIdle()
+
+        expectOnlyScreenAboveStart(TestScreenDestination2)
+    }
+
+    @Test
+    fun popsDialogsWhenScreenReplacesDialogsUpToOneOfThem() = test {
+        openDialog(ResultDialogDestination)
+        composeUiTest.runOnUiThread { navigator.navigateTo(NoResultDialogDestination) }
+        composeUiTest.runOnUiThread { navigator.navigateTo(ResultDialogDestination) }
+        composeUiTest.waitForIdle()
+
+        composeUiTest.runOnUiThread {
+            navigator.navigateTo(TestScreenDestination2.popUpTo(NoResultDialogDestination, inclusive = true))
+        }
+        composeUiTest.waitForIdle()
+
+        expectOnlyScreenAboveStart(TestScreenDestination2)
+    }
+
+    private fun expectOnlyScreenAboveStart(screen: TestScreenDestination) = with(composeUiTest) {
+        onNodeWithTag(DialogTag).assertDoesNotExist()
+        onNodeWithTag(ScreenNameTag).assertTextEquals(screen.name)
+        assertEquals(2, navigator.backStack.size)
+
+        runOnUiThread { navigator.navigateBack() }
+        waitForIdle()
+        onNodeWithTag(DialogTag).assertDoesNotExist()
+        onNodeWithTag(ScreenNameTag).assertTextEquals(TestScreenDestination1.name)
     }
 
     private fun expectLifecycle(tag: String, state: Lifecycle.State) {
