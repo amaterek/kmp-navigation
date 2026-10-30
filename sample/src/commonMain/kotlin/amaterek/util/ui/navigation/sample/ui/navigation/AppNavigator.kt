@@ -3,7 +3,6 @@ package amaterek.util.ui.navigation.sample.ui.navigation
 import amaterek.util.ui.navigation.Navigator
 import amaterek.util.ui.navigation.annotation.InternalNavigation
 import amaterek.util.ui.navigation.destination.Destination
-import amaterek.util.ui.navigation.destination.DialogDestination
 import amaterek.util.ui.navigation.destination.NavigatorDestination
 import amaterek.util.ui.navigation.destination.PreviousDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
@@ -18,8 +17,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlin.reflect.KClass
 
 @OptIn(InternalNavigation::class)
-class AppNavigator(
-    private val appDialogState: MutableState<DialogDestination?>,
+internal class AppNavigator(
+    private val appDialogState: MutableState<AppFinishDialogDestination?>,
     private val platformNavigation: PlatformNavigation,
 ) : Navigator {
 

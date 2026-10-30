@@ -1,7 +1,7 @@
 package amaterek.util.ui.navigation.sample.ui.navigation
 
+import amaterek.util.ui.navigation.NavigationGraph
 import amaterek.util.ui.navigation.Navigator
-import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.jetpack.JetpackNavigationHost
 import amaterek.util.ui.navigation.jetpack.rememberJetpackNavigator
@@ -74,7 +74,7 @@ internal class GetJetpackNavigationHost : NavigatorProvider {
     @Composable
     override fun rememberNavigator(
         startDestination: ScreenDestination,
-        graph: Set<GraphDestination>,
+        graph: NavigationGraph,
         parent: Navigator?,
     ): Navigator = rememberJetpackNavigator(startDestination, graph, parent)
 }

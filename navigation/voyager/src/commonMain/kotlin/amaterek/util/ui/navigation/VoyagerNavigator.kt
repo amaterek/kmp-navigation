@@ -11,6 +11,7 @@ import amaterek.util.ui.navigation.serialization.SkipForSerialization
 import amaterek.util.ui.navigation.transition.ScreenTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
+import androidx.compose.ui.window.DialogProperties
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.core.screen.ScreenKey
 import kotlinx.coroutines.flow.Flow
@@ -23,14 +24,17 @@ import cafe.adriel.voyager.navigator.Navigator as VoyagerHavHostController
 @Stable
 class VoyagerNavigator internal constructor(
     internal val startBackStack: List<ScreenDestination>,
-    graph: Set<GraphDestination>,
+    private val graph: NavigationGraph,
     parent: Navigator?,
     internal val defaultTransition: ScreenTransition,
-) : BaseNavigator(graph, parent) {
+) : BaseNavigator(graph.destinations, parent) {
 
     // HACK Nullable: For Voyager - navigator is available later
     internal var navHostController: VoyagerHavHostController? = null
     internal val currentDestinationFlow = MutableStateFlow(startBackStack.last())
+
+    internal fun dialogPropertiesOf(destination: ScreenDestination): DialogProperties? =
+        graph.entries[destination::class]?.dialogProperties
 
     private inner class VoyagerBackStack : Navigator.BackStack {
 

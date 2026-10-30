@@ -1,24 +1,20 @@
 package amaterek.util.ui.navigation.sample.ui.screen.main.home.forresultdialog
 
 import amaterek.util.ui.navigation.destination.DialogDestination
-import amaterek.util.ui.navigation.destination.DialogPropertiesProvider
 import amaterek.util.ui.navigation.serialization.Serializable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.window.DialogProperties
 
-data class HomeForResultDialogDestination(val level: Int) : DialogDestination, DialogPropertiesProvider {
-
-    override val dialogProperties: DialogProperties
-        get() = Companion.dialogProperties
+data class HomeForResultDialogDestination(val level: Int) : DialogDestination {
 
     @Composable
     override fun Content() {
         HomeForResultDialog(level)
     }
 
-    companion object : DialogPropertiesProvider {
+    companion object {
 
-        override val dialogProperties: DialogProperties = DialogProperties(
+        val dialogProperties = DialogProperties(
             dismissOnBackPress = false,
             dismissOnClickOutside = false,
         )

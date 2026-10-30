@@ -8,6 +8,7 @@ import amaterek.util.ui.navigation.canNavigateBack
 import amaterek.util.ui.navigation.currentDestinationFlow
 import amaterek.util.ui.navigation.destination.popUpTo
 import amaterek.util.ui.navigation.navigateBack
+import amaterek.util.ui.navigation.navigationGraph
 import amaterek.util.ui.navigation.popUpTo
 import amaterek.util.ui.navigation.resultFlow
 import amaterek.util.ui.navigation.sample.LocalNavigatorProvider
@@ -59,12 +60,12 @@ internal fun RootMainScreen() {
 
     val mainNavigator = LocalNavigatorProvider.current.rememberNavigator(
         startDestination = HomeDestination,
-        graph = setOf(
-            HomeDestination::class,
-            OtherDestination::class,
-            HomeForResultDialogDestination::class,
-            HomeMultipleDestination::class,
-        ),
+        graph = navigationGraph {
+            screen<HomeDestination>()
+            screen<OtherDestination>()
+            dialog<HomeForResultDialogDestination>(properties = HomeForResultDialogDestination.dialogProperties)
+            screen<HomeMultipleDestination>()
+        },
         parent = navigator,
     )
 

@@ -1,15 +1,15 @@
 package amaterek.util.ui.navigation.sample.ui.navigation.finishappdialog
 
 import amaterek.util.ui.navigation.destination.DialogDestination
-import amaterek.util.ui.navigation.destination.DialogPropertiesProvider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.window.DialogProperties
 
 @Immutable
-internal class AppFinishDialogDestination(cancelable: AppFinishDialogIsCancelable) : DialogDestination, DialogPropertiesProvider {
+internal class AppFinishDialogDestination(cancelable: AppFinishDialogIsCancelable) : DialogDestination {
 
-    override val dialogProperties =
+    // Shown by the app outside of a navigation graph, so it keeps its own dialog properties
+    val dialogProperties =
         when (cancelable) {
             AppFinishDialogIsCancelable.Yes -> true
             AppFinishDialogIsCancelable.No -> false

@@ -2,6 +2,7 @@
 
 package amaterek.util.ui.navigation.jetpack
 
+import amaterek.util.ui.navigation.NavigationGraph
 import amaterek.util.ui.navigation.Navigator
 import amaterek.util.ui.navigation.annotation.InternalNavigation
 import amaterek.util.ui.navigation.destination.GraphDestination
@@ -29,11 +30,11 @@ import kotlin.reflect.KClass
 class JetpackNavigator(
     internal val startDestination: ScreenDestination,
     internal val navHostController: NavHostController,
-    internal val graph: Set<GraphDestination>,
+    internal val graph: NavigationGraph,
     private val coroutineScope: CoroutineScope,
     parent: Navigator?,
     internal val defaultTransition: ScreenTransition,
-) : BaseNavigator(graph, parent) {
+) : BaseNavigator(graph.destinations, parent) {
 
     private val screenDestinationsMap = mutableMapOf<String, ScreenDestination>()
 

@@ -1,13 +1,12 @@
 package amaterek.util.ui.navigation.sample
 
 import amaterek.util.ui.navigation.LocalNavigator
-import amaterek.util.ui.navigation.annotation.InternalNavigation
-import amaterek.util.ui.navigation.destination.DialogDestination
-import amaterek.util.ui.navigation.internal.NavigationDialog
 import amaterek.util.ui.navigation.navigateBack
+import amaterek.util.ui.navigation.navigationGraph
 import amaterek.util.ui.navigation.sample.ui.navigation.AppNavigator
 import amaterek.util.ui.navigation.sample.ui.navigation.NavigatorProvider
 import amaterek.util.ui.navigation.sample.ui.navigation.PlatformNavigation
+import amaterek.util.ui.navigation.sample.ui.navigation.finishappdialog.AppFinishDialogDestination
 import amaterek.util.ui.navigation.sample.ui.screen.main.RootMainDestination
 import amaterek.util.ui.navigation.sample.ui.screen.splash.RootSplashDestination
 import amaterek.util.ui.navigation.sample.ui.screen.withargumentandforresult.RootWithArgumentAndForResultDestination
@@ -18,10 +17,11 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.window.Dialog
 
 @Composable
 internal fun ComposeApp(platformNavigation: PlatformNavigation, navigatorProvider: NavigatorProvider) {
-    val appDialogDestination = remember { mutableStateOf<DialogDestination?>(null) }
+    val appDialogDestination = remember { mutableStateOf<AppFinishDialogDestination?>(null) }
 
     val appNavigator = remember {
         AppNavigator(appDialogDestination, platformNavigation)
@@ -36,11 +36,11 @@ internal fun ComposeApp(platformNavigation: PlatformNavigation, navigatorProvide
             navigatorProvider(
                 navigator = navigatorProvider.rememberNavigator(
                     startDestination = RootSplashDestination,
-                    graph = setOf(
-                        RootSplashDestination::class,
-                        RootMainDestination::class,
-                        RootWithArgumentAndForResultDestination::class,
-                    ),
+                    graph = navigationGraph {
+                        screen<RootSplashDestination>()
+                        screen<RootMainDestination>()
+                        screen<RootWithArgumentAndForResultDestination>()
+                    },
                     parent = appNavigator,
                 )
             )
@@ -53,16 +53,16 @@ internal fun ComposeApp(platformNavigation: PlatformNavigation, navigatorProvide
     }
 }
 
-@OptIn(InternalNavigation::class)
 @Composable
 private fun AppDialogHost(
     onDismissRequest: () -> Unit,
-    dialogDestinationState: MutableState<DialogDestination?>,
+    dialogDestinationState: MutableState<AppFinishDialogDestination?>,
 ) {
     dialogDestinationState.value?.let {
-        NavigationDialog(
-            dialogDestination = it,
+        Dialog(
             onDismissRequest = onDismissRequest,
+            properties = it.dialogProperties,
+            content = { it.Content() },
         )
     }
 }

@@ -8,7 +8,6 @@ import amaterek.util.ui.navigation.common.ObjectDestination1
 import amaterek.util.ui.navigation.common.ObjectDestination2
 import amaterek.util.ui.navigation.common.TestDestination
 import amaterek.util.ui.navigation.destination.Destination
-import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.jetpack.JetpackNavigationHost
 import amaterek.util.ui.navigation.jetpack.JetpackNavigator
@@ -26,7 +25,7 @@ import kotlin.test.assertNull
 abstract class BaseNavigationTest(
     private val rememberNavigator: @Composable (
         startDestination: ScreenDestination,
-        graph: Set<GraphDestination>,
+        graph: NavigationGraph,
         parent: Navigator?,
     ) -> Navigator,
 ) {
@@ -88,7 +87,11 @@ abstract class BaseNavigationTest(
         MaterialTheme {
             navigator = rememberNavigator(
                 startDestination,
-                setOf(ObjectDestination1::class, ObjectDestination2::class, InstanceDestination::class),
+                navigationGraph {
+                    screen<ObjectDestination1>()
+                    screen<ObjectDestination2>()
+                    screen<InstanceDestination>()
+                },
                 parentNavigator,
             )
             when (navigator) {

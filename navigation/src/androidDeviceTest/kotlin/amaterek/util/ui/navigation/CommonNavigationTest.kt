@@ -3,7 +3,6 @@ package amaterek.util.ui.navigation
 import amaterek.util.ui.navigation.common.InstanceDestination
 import amaterek.util.ui.navigation.common.ObjectDestination1
 import amaterek.util.ui.navigation.common.ObjectDestination2
-import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.PreviousDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.destination.withResult
@@ -19,7 +18,7 @@ import kotlin.test.assertTrue
 abstract class CommonNavigationTest(
     rememberNavigator: @Composable (
         startDestination: ScreenDestination,
-        graph: Set<GraphDestination>,
+        graph: NavigationGraph,
         parent: Navigator?,
     ) -> Navigator,
 ) : BaseNavigationTest(rememberNavigator) {

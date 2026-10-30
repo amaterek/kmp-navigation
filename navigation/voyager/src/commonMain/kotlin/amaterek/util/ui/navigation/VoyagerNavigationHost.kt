@@ -1,11 +1,8 @@
 package amaterek.util.ui.navigation
 
 import amaterek.util.ui.navigation.annotation.InternalNavigation
-import amaterek.util.ui.navigation.destination.DialogDestination
-import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.PreviousDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
-import amaterek.util.ui.navigation.internal.NavigationDialog
 import amaterek.util.ui.navigation.transition.FadeScreenTransition
 import amaterek.util.ui.navigation.transition.ScreenTransition
 import androidx.compose.animation.AnimatedContent
@@ -24,6 +21,8 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import cafe.adriel.voyager.core.annotation.InternalVoyagerApi
 import cafe.adriel.voyager.core.stack.StackEvent
 import kotlinx.coroutines.flow.launchIn
@@ -34,7 +33,7 @@ import cafe.adriel.voyager.navigator.Navigator as VNavigator
 @Composable
 fun VoyagerNavigationHost(
     startBackStack: List<ScreenDestination>,
-    graph: Set<GraphDestination>,
+    graph: NavigationGraph,
     parent: Navigator? = null,
 ) = VoyagerNavigationHost(
     navigator = rememberVoyagerNavigator(startBackStack, graph, parent),
@@ -44,7 +43,7 @@ fun VoyagerNavigationHost(
 @Composable
 fun VoyagerNavigationHost(
     startDestination: ScreenDestination,
-    graph: Set<GraphDestination>,
+    graph: NavigationGraph,
     parent: Navigator? = null,
     defaultTransition: ScreenTransition = FadeScreenTransition,
 ) = VoyagerNavigationHost(
@@ -73,22 +72,26 @@ fun VoyagerNavigationHost(
 
             val screenItem by remember {
                 derivedStateOf {
-                    vNavigator.items.last { (it as VoyagerBackStackEntry).destination !is DialogDestination } as VoyagerBackStackEntry
+                    vNavigator.items.last {
+                        navigator.dialogPropertiesOf((it as VoyagerBackStackEntry).destination) == null
+                    } as VoyagerBackStackEntry
                 }
             }
 
             val dialogItem by remember {
                 derivedStateOf {
-                    vNavigator.items.lastOrNull { (it as VoyagerBackStackEntry).destination is DialogDestination } as? VoyagerBackStackEntry
+                    vNavigator.items.lastOrNull {
+                        navigator.dialogPropertiesOf((it as VoyagerBackStackEntry).destination) != null
+                    } as? VoyagerBackStackEntry
                 }
             }
 
             ScreenItem(vNavigator, screenItem, navigator.defaultTransition)
 
             dialogItem?.let {
-                NavigationDialog(
-                    dialogDestination = it.destination as DialogDestination,
+                Dialog(
                     onDismissRequest = { navigator.navigateTo(PreviousDestination) },
+                    properties = navigator.dialogPropertiesOf(it.destination) ?: DialogProperties(),
                     content = { vNavigator.ScreenContent(it) },
                 )
             }
@@ -101,7 +104,7 @@ fun VoyagerNavigationHost(
 @Composable
 fun rememberVoyagerNavigator(
     startDestination: ScreenDestination,
-    graph: Set<GraphDestination>,
+    graph: NavigationGraph,
     parent: Navigator?,
     defaultTransition: ScreenTransition = FadeScreenTransition,
 ): Navigator = remember { VoyagerNavigator(listOf(startDestination), graph, parent, defaultTransition) }
@@ -111,7 +114,7 @@ fun rememberVoyagerNavigator(
 @Composable
 fun rememberVoyagerNavigator(
     startBackStack: List<ScreenDestination>,
-    graph: Set<GraphDestination>,
+    graph: NavigationGraph,
     parent: Navigator?,
     defaultTransition: ScreenTransition = FadeScreenTransition,
 ): Navigator = remember { VoyagerNavigator(startBackStack, graph, parent, defaultTransition) }

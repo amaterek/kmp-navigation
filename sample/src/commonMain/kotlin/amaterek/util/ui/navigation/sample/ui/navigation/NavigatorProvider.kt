@@ -1,10 +1,10 @@
 package amaterek.util.ui.navigation.sample.ui.navigation
 
+import amaterek.util.ui.navigation.NavigationGraph
 import amaterek.util.ui.navigation.Navigator
 import amaterek.util.ui.navigation.VoyagerNavigationHost
 import amaterek.util.ui.navigation.VoyagerNavigator
 import amaterek.util.ui.navigation.annotation.InternalNavigation
-import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.rememberVoyagerNavigator
 import androidx.compose.runtime.Composable
@@ -21,7 +21,7 @@ internal interface NavigatorProvider {
     @Composable
     fun rememberNavigator(
         startDestination: ScreenDestination,
-        graph: Set<GraphDestination>,
+        graph: NavigationGraph,
         parent: Navigator?,
     ): Navigator
 }
@@ -41,7 +41,7 @@ internal class GetDefaultNavigationHost : NavigatorProvider {
     @Composable
     override fun rememberNavigator(
         startDestination: ScreenDestination,
-        graph: Set<GraphDestination>,
+        graph: NavigationGraph,
         parent: Navigator?,
     ): Navigator = rememberVoyagerNavigator(startDestination, graph, parent)
 }
