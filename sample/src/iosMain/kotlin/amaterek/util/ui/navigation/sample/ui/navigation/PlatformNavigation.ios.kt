@@ -3,6 +3,8 @@
 package amaterek.util.ui.navigation.sample.ui.navigation
 
 import androidx.compose.runtime.Stable
+import platform.Foundation.NSURL
+import platform.UIKit.UIApplication
 import kotlin.system.exitProcess
 
 @Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
@@ -13,5 +15,8 @@ actual class PlatformNavigation actual constructor(context: Any) {
         exitProcess(0)
     }
 
-    actual fun openLink(url: String) = Unit
+    actual fun openLink(url: String) {
+        val nsUrl = NSURL.URLWithString(url) ?: return
+        UIApplication.sharedApplication.openURL(nsUrl, options = emptyMap<Any?, Any>(), completionHandler = null)
+    }
 }
