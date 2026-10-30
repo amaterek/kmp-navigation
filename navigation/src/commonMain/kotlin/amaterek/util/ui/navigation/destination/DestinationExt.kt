@@ -100,14 +100,19 @@ fun ScreenDestination.popUpTo(
 
 /**
  * Redirect the destination to parent navigator if the destination is not in current graph.
+ * [NoneDestination] is returned as is, no graph contains it, so it would reach the root navigator.
  */
 @OptIn(InternalNavigation::class)
 @Stable
 fun Destination.redirectToParentIfNotInGraph(): Destination =
-    NavigatorDestination.RedirectToParent(
-        destination = this,
-        strategy = RedirectToParentStrategy.IfNotInCurrentGraph,
-    )
+    if (this is NoneDestination) {
+        this
+    } else {
+        NavigatorDestination.RedirectToParent(
+            destination = this,
+            strategy = RedirectToParentStrategy.IfNotInCurrentGraph,
+        )
+    }
 
 /**
  * Redirects the destination to parent navigator [deep] times.
