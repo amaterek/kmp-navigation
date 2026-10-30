@@ -7,6 +7,10 @@ import amaterek.util.ui.navigation.sample.ui.navigation.AppNavigator
 import amaterek.util.ui.navigation.sample.ui.navigation.NavigatorProvider
 import amaterek.util.ui.navigation.sample.ui.navigation.PlatformNavigation
 import amaterek.util.ui.navigation.sample.ui.navigation.finishappdialog.AppFinishDialogDestination
+import amaterek.util.ui.navigation.sample.ui.screen.listdetail.ItemDetailDestination
+import amaterek.util.ui.navigation.sample.ui.screen.listdetail.ItemDetailPane
+import amaterek.util.ui.navigation.sample.ui.screen.listdetail.ItemListDestination
+import amaterek.util.ui.navigation.sample.ui.screen.listdetail.ItemListPane
 import amaterek.util.ui.navigation.sample.ui.screen.main.RootMainDestination
 import amaterek.util.ui.navigation.sample.ui.screen.splash.RootSplashDestination
 import amaterek.util.ui.navigation.sample.ui.screen.withargumentandforresult.RootWithArgumentAndForResultDestination
@@ -40,6 +44,8 @@ internal fun ComposeApp(platformNavigation: PlatformNavigation, navigatorProvide
                         screen<RootSplashDestination>()
                         screen<RootMainDestination>()
                         screen<RootWithArgumentAndForResultDestination>()
+                        screen<ItemListDestination>(metadata = ItemListPane)
+                        screen<ItemDetailDestination>(metadata = ItemDetailPane)
                     },
                     parent = appNavigator,
                 )

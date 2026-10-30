@@ -10,6 +10,7 @@ import amaterek.util.ui.navigation.resultFlow
 import amaterek.util.ui.navigation.sample.ui.navigation.LifecycleLogger
 import amaterek.util.ui.navigation.sample.ui.navigation.finishappdialog.AppFinishDialogIsCancelable
 import amaterek.util.ui.navigation.sample.ui.navigation.link.AppLinkDestination
+import amaterek.util.ui.navigation.sample.ui.screen.listdetail.ItemListDestination
 import amaterek.util.ui.navigation.sample.ui.screen.main.LocalRootNavigationResultFlow
 import amaterek.util.ui.navigation.sample.ui.screen.main.home.bottomsheet.HomeBottomSheetDestination
 import amaterek.util.ui.navigation.sample.ui.screen.main.home.forresultdialog.HomeForResultDialogDestination
@@ -137,6 +138,13 @@ internal fun HomeScreen() {
             onClick = { navigator.navigateTo(RootWithArgumentAndForResultDestination(text = "Test text").redirectToParent()) },
         ) {
             Text("With argument and for result screen: $withArgumentAndForResultDestinationResult\nto root navigator", textAlign = TextAlign.Center)
+        }
+
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = { navigator.navigateTo(ItemListDestination.redirectToParent()) },
+        ) {
+            Text("List-detail (two panes with Navigation 3)\nto root navigator", textAlign = TextAlign.Center)
         }
 
         Button(

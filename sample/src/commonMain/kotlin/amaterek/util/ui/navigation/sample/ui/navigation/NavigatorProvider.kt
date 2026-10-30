@@ -9,6 +9,8 @@ import amaterek.util.ui.navigation.jetpack.rememberJetpackNavigator
 import amaterek.util.ui.navigation.nav3.Nav3NavigationHost
 import amaterek.util.ui.navigation.nav3.rememberNav3Navigator
 import amaterek.util.ui.navigation.rememberVoyagerNavigator
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 
@@ -64,11 +66,12 @@ internal class GetJetpackNavigationHost : NavigatorProvider {
 
 internal class GetNav3NavigationHost : NavigatorProvider {
 
+    @OptIn(ExperimentalMaterial3AdaptiveApi::class)
     @Composable
     override fun invoke(
         navigator: Navigator,
     ) {
-        Nav3NavigationHost(navigator)
+        Nav3NavigationHost(navigator, sceneStrategies = listOf(rememberListDetailSceneStrategy<Any>()))
     }
 
     @Composable
