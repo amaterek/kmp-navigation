@@ -66,10 +66,6 @@ kotlin {
             implementation(libs.compose.runtime)
         }
 
-        androidMain.dependencies {
-            implementation(libs.androidx.activity.compose)
-        }
-
         commonTest.dependencies {
             implementation(libs.coroutines.test)
             implementation(libs.kotlin.test)

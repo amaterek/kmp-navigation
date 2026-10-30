@@ -48,6 +48,7 @@ kotlin {
             implementation(libs.compose.runtime)
             implementation(libs.compose.ui)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.jetbrains.navigationevent.compose)
 
             implementation(libs.voyager.core)
             implementation(libs.voyager.screenmodel)

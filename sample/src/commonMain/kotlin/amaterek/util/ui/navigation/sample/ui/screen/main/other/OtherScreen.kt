@@ -1,9 +1,6 @@
 package amaterek.util.ui.navigation.sample.ui.screen.main.other
 
 import amaterek.util.ui.navigation.LocalDestination
-import amaterek.util.ui.navigation.LocalNavigator
-import amaterek.util.ui.navigation.backhandler.BackHandler
-import amaterek.util.ui.navigation.navigateBack
 import amaterek.util.ui.navigation.sample.ui.navigation.LifecycleLogger
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,12 +17,9 @@ import androidx.compose.ui.unit.dp
 @Composable
 internal fun OtherScreen() {
 
-    val navigator = LocalNavigator.current
     val currentDestination = LocalDestination.current
 
     LifecycleLogger()
-
-    BackHandler { navigator.navigateBack() }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(horizontal = 32.dp),

@@ -2,8 +2,8 @@ package amaterek.util.ui.navigation.sample.ui.screen.withargumentandforresult
 
 import amaterek.util.ui.navigation.LocalDestination
 import amaterek.util.ui.navigation.LocalNavigator
-import amaterek.util.ui.navigation.backhandler.BackHandler
 import amaterek.util.ui.navigation.navigateBackWithResult
+import amaterek.util.ui.navigation.sample.ui.navigation.BackHandler
 import amaterek.util.ui.navigation.sample.ui.navigation.LifecycleLogger
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

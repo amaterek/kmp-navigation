@@ -53,6 +53,7 @@ kotlin {
             implementation(libs.compose.material3)
             implementation(libs.compose.runtime)
             implementation(libs.compose.ui)
+            implementation(libs.jetbrains.navigationevent.compose)
 
             implementation(libs.amaterek.log)
         }

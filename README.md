@@ -243,12 +243,21 @@ fun Content() {
 
 ### Handling back
 
+Navigation hosts handle system back (Android back button or gesture, iOS back swipe, Escape on desktop) with
+[navigation event](https://developer.android.com/guide/navigation/navigation-event/handle-back): they navigate to
+`PreviousDestination` while the navigator can go back, otherwise the back is handled by the parent host or the platform.
+
+A destination can handle back itself with `NavigationBackHandler`, which takes precedence over the host:
+
 ```kotlin
 @Composable
 fun Content() {
     val navigator = LocalNavigator.current
 
-    BackHandler { navigator.navigateBack() }
+    NavigationBackHandler(
+        state = rememberNavigationEventState(currentInfo = NavigationEventInfo.None),
+        onBackCompleted = { navigator.navigateBackWithResult(MyResult.Cancelled) },
+    )
 }
 ```
 

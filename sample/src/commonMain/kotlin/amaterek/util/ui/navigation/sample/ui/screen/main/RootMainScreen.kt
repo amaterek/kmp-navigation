@@ -3,7 +3,6 @@ package amaterek.util.ui.navigation.sample.ui.screen.main
 import amaterek.util.log.Log
 import amaterek.util.ui.navigation.LocalDestination
 import amaterek.util.ui.navigation.LocalNavigator
-import amaterek.util.ui.navigation.backhandler.BackHandler
 import amaterek.util.ui.navigation.canNavigateBack
 import amaterek.util.ui.navigation.currentDestinationFlow
 import amaterek.util.ui.navigation.destination.popUpTo
@@ -80,8 +79,6 @@ internal fun RootMainScreen() {
     }
 
     LifecycleLogger()
-
-    BackHandler { navigator.navigateBack() }
 
     val navigationResultFlow = navigator.resultFlow
     val forChildrenNavigationResultFlow = remember { MutableSharedFlow<Any>() }

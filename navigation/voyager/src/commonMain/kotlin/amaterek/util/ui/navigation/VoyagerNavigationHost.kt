@@ -23,6 +23,9 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import cafe.adriel.voyager.core.annotation.InternalVoyagerApi
 import cafe.adriel.voyager.core.stack.StackEvent
 import kotlinx.coroutines.flow.launchIn
@@ -61,9 +64,18 @@ fun VoyagerNavigationHost(
     ) {
         VNavigator(
             screens = navigator.startBackStack.map { navigator.backStackEntryOf(it) },
-            onBackPressed = { false },
+            onBackPressed = null,
         ) { vNavigator ->
             navigator.navHostController = vNavigator
+
+            // Voyager handles back only on Android. Registered before the screens, so their handlers and the ones
+            // of nested hosts take precedence.
+            NavigationBackHandler(
+                state = rememberNavigationEventState(currentInfo = NavigationEventInfo.None),
+                isBackEnabled = vNavigator.canPop,
+                onBackCompleted = { navigator.navigateTo(PreviousDestination) },
+            )
+
             LaunchedEffect(vNavigator.key) {
                 snapshotFlow { navigator.destinationOf(vNavigator.lastItem as VoyagerBackStackEntry) }
                     .onEach { navigator.currentDestinationFlow.value = it }

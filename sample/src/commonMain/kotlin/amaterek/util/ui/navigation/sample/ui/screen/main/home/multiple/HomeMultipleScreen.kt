@@ -2,11 +2,9 @@ package amaterek.util.ui.navigation.sample.ui.screen.main.home.multiple
 
 import amaterek.util.ui.navigation.LocalDestination
 import amaterek.util.ui.navigation.LocalNavigator
-import amaterek.util.ui.navigation.backhandler.BackHandler
 import amaterek.util.ui.navigation.destination.PopUpToDestination
 import amaterek.util.ui.navigation.destination.PreviousDestination
 import amaterek.util.ui.navigation.destination.withResult
-import amaterek.util.ui.navigation.navigateBack
 import amaterek.util.ui.navigation.popUpToWithResult
 import amaterek.util.ui.navigation.resultFlow
 import amaterek.util.ui.navigation.sample.ui.navigation.LifecycleLogger
@@ -34,10 +32,6 @@ internal fun HomeMultipleScreen(level: Int) {
     val navigationResult by navigator.resultFlow.collectAsState(null)
 
     LifecycleLogger()
-
-    BackHandler {
-        navigator.navigateBack()
-    }
 
     fun getResult() = "Result from level $level"
 

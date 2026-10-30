@@ -2,9 +2,7 @@ package amaterek.util.ui.navigation.sample.ui.screen.splash
 
 import amaterek.util.ui.navigation.LocalDestination
 import amaterek.util.ui.navigation.LocalNavigator
-import amaterek.util.ui.navigation.backhandler.BackHandler
 import amaterek.util.ui.navigation.destination.replaceAll
-import amaterek.util.ui.navigation.navigateBack
 import amaterek.util.ui.navigation.sample.ui.navigation.LifecycleLogger
 import amaterek.util.ui.navigation.sample.ui.screen.main.RootMainDestination
 import androidx.compose.foundation.clickable
@@ -27,8 +25,6 @@ internal fun RootSplashScreen() {
     val currentDestination = LocalDestination.current
 
     LifecycleLogger()
-
-    BackHandler { navigator.navigateBack() }
 
     fun finisSplash() {
         navigator.navigateTo(RootMainDestination.replaceAll())

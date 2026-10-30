@@ -3,10 +3,8 @@ package amaterek.util.ui.navigation.sample.ui.screen.main.home
 import amaterek.util.log.Log
 import amaterek.util.ui.navigation.LocalDestination
 import amaterek.util.ui.navigation.LocalNavigator
-import amaterek.util.ui.navigation.backhandler.BackHandler
 import amaterek.util.ui.navigation.destination.redirectToParent
 import amaterek.util.ui.navigation.destination.redirectToParentIfNotInGraph
-import amaterek.util.ui.navigation.navigateBack
 import amaterek.util.ui.navigation.navigateBackWithResult
 import amaterek.util.ui.navigation.resultFlow
 import amaterek.util.ui.navigation.sample.ui.navigation.LifecycleLogger
@@ -54,8 +52,6 @@ internal fun HomeScreen() {
     )
 
     LifecycleLogger()
-
-    BackHandler { navigator.navigateBack() }
 
     LaunchedEffect(Unit) {
         navigationResultFlow
