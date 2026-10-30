@@ -25,3 +25,17 @@ detekt {
 dependencies {
     detektPlugins(libs.detekt.formatting)
 }
+
+// The Compose Desktop artifact of the host (compose.desktop.currentOs without the Compose plugin), which provides the
+// native Skiko library to the UI tests on the JVM
+val composeDesktopCurrentOs by extra {
+    val os = System.getProperty("os.name").lowercase().let {
+        when {
+            it.startsWith("mac") -> "macos"
+            it.startsWith("windows") -> "windows"
+            else -> "linux"
+        }
+    }
+    val arch = if (System.getProperty("os.arch") in listOf("aarch64", "arm64")) "arm64" else "x64"
+    "org.jetbrains.compose.desktop:desktop-jvm-$os-$arch:${libs.versions.compose.multiplatform.get()}"
+}

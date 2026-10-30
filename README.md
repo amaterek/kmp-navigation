@@ -324,4 +324,15 @@ The closing state isn't saved, so a dialog that is closing when the Android acti
 
 ### More examples
 
-Please check sample project and instrumented tests in the repo.
+Please check sample project and tests in the repo.
+
+## Tests
+
+The navigation UI tests are in `commonTest`, so they run with every navigator on all platforms:
+
+- JVM: `./gradlew :navigation:jvmTest :navigation:dialog:jvmTest`
+- iOS simulator: `./gradlew -Pbuild.ios=true :navigation:iosSimulatorArm64Test :navigation:dialog:iosSimulatorArm64Test`
+- Android device or emulator: `./gradlew :navigation:connectedAndroidDeviceTest :navigation:dialog:connectedAndroidDeviceTest`
+
+State restoration and the animated dialog's back and click outside are tested only on Android (`androidDeviceTest`):
+Compose Multiplatform's `StateRestorationTester` isn't implemented on iOS.

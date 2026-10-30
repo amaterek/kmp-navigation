@@ -41,8 +41,6 @@ kotlin {
             consumerKeepRules.file("consumer-rules.pro")
         }
 
-        withHostTest {}
-
         withDeviceTestBuilder {
             sourceSetTreeName = "test"
         }.configure {
@@ -67,36 +65,26 @@ kotlin {
         }
 
         commonTest.dependencies {
-            implementation(libs.coroutines.test)
+            implementation(projects.navigation.jetpack)
+            implementation(projects.navigation.voyager)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.ui.test)
             implementation(libs.kotlin.test)
+        }
+
+        jvmTest.dependencies {
+            implementation(rootProject.extra["composeDesktopCurrentOs"] as String)
+            implementation(libs.coroutines.test)
+            implementation(libs.junit)
             implementation(libs.mockk)
             implementation(libs.turbine)
         }
 
-        jvmTest.dependencies {
-            implementation(libs.junit)
-            implementation(libs.mockk)
-        }
-
-        getByName("androidHostTest").dependencies {
-            implementation(libs.junit)
-            implementation(libs.mockk)
-        }
-
         getByName("androidDeviceTest").dependencies {
-            implementation(project(":navigation:jetpack"))
-            implementation(project(":navigation:voyager"))
-            implementation(libs.androidx.activity.compose)
-            implementation(libs.androidx.appcompat)
-            implementation(libs.androidx.lifecycle.runtime)
-            implementation(libs.compose.material3)
-            implementation(libs.compose.ui)
             implementation(libs.androidx.compose.ui.test.junit4)
             implementation(libs.androidx.compose.ui.test.manifest)
             implementation(libs.androidx.test.junit)
             implementation(libs.androidx.test.runner)
-            implementation(libs.junit)
-            implementation(libs.mockk)
         }
     }
 }

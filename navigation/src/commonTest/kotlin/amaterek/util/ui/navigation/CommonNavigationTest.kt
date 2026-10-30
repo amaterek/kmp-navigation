@@ -7,7 +7,7 @@ import amaterek.util.ui.navigation.destination.PreviousDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.destination.withResult
 import androidx.compose.runtime.Composable
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse

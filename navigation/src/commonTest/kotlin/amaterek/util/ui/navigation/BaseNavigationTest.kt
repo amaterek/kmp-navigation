@@ -13,15 +13,17 @@ import amaterek.util.ui.navigation.jetpack.JetpackNavigationHost
 import amaterek.util.ui.navigation.jetpack.JetpackNavigator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.test.ComposeUiTest
+import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertTextEquals
-import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.v2.runComposeUiTest
 import kotlinx.coroutines.flow.Flow
-import org.junit.Before
-import org.junit.Rule
+import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
+@OptIn(ExperimentalTestApi::class)
 abstract class BaseNavigationTest(
     private val rememberNavigator: @Composable (
         startDestination: ScreenDestination,
@@ -29,20 +31,19 @@ abstract class BaseNavigationTest(
         parent: Navigator?,
     ) -> Navigator,
 ) {
-    @get:Rule
-    val composeTestRule = createComposeRule()
-
     protected val parentNavigator = TestParentNavigator()
+
+    private lateinit var composeUiTest: ComposeUiTest
 
     private lateinit var navigator: Navigator
 
-    @Before
+    @BeforeTest
     fun setup() {
         parentNavigator.reset()
     }
 
     protected fun expectStartDestination(startDestination: TestDestination) {
-        with(composeTestRule) {
+        with(composeUiTest) {
             setContent { TestContent(startDestination = startDestination) }
             waitForIdle()
             onNodeWithTag(DestinationNameTag).assertTextEquals(startDestination.name)
@@ -55,7 +56,7 @@ abstract class BaseNavigationTest(
         result: String = "",
         action: (Navigator.(TestDestination) -> Unit)? = null,
     ) {
-        with(composeTestRule) {
+        with(composeUiTest) {
             action?.let { runNavigator { action(destination) } }
             waitForIdle()
             onNodeWithTag(DestinationNameTag).assertTextEquals(destination.name)
@@ -64,19 +65,20 @@ abstract class BaseNavigationTest(
     }
 
     protected fun runNavigator(action: Navigator.() -> Unit) {
-        composeTestRule.runOnUiThread {
+        composeUiTest.runOnUiThread {
             navigator.action()
         }
     }
 
     protected fun TestDestination.expectLastIndexInBackStack(index: Int) {
         assertEquals(index, navigator.backStack.lastIndexOf(this))
-        if (this::class.objectInstance != null) {
+        if (this !is InstanceDestination) {
             assertEquals(index, navigator.backStack.lastIndexOf(this::class))
         }
     }
 
-    protected fun test(test: () -> Unit) {
+    protected fun test(test: () -> Unit) = runComposeUiTest {
+        composeUiTest = this
         test()
         assertNull(parentNavigator.lastDestination)
     }
@@ -94,7 +96,7 @@ abstract class BaseNavigationTest(
                 },
                 parentNavigator,
             )
-            when (navigator) {
+            when (val navigator = navigator) {
                 is JetpackNavigator -> JetpackNavigationHost(navigator)
                 is VoyagerNavigator -> VoyagerNavigationHost(navigator)
                 else -> error("Unknown navigator")
