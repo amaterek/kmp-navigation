@@ -1,12 +1,6 @@
 package amaterek.util.ui.navigation.sample.ui.navigation
 
-import amaterek.util.ui.navigation.NavigationGraph
-import amaterek.util.ui.navigation.Navigator
-import amaterek.util.ui.navigation.destination.ScreenDestination
-import amaterek.util.ui.navigation.jetpack.JetpackNavigationHost
-import amaterek.util.ui.navigation.jetpack.rememberJetpackNavigator
 import amaterek.util.ui.navigation.sample.ComposeApp
-import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,19 +13,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun ChooseNavigatorScreen() {
-    val chosenNavigator = rememberSaveable() {
+fun ChooseNavigatorScreen(platformNavigation: PlatformNavigation) {
+    val chosenNavigator = rememberSaveable {
         mutableStateOf<ChosenNavigator?>(null)
     }
-    val context = LocalContext.current
     when (chosenNavigator.value) {
         null -> ChooseNavigatorView { chosenNavigator.value = it }
-        ChosenNavigator.Multiplatform -> ComposeApp(PlatformNavigation(context), GetDefaultNavigationHost())
-        ChosenNavigator.Android -> ComposeApp(PlatformNavigation(context), GetJetpackNavigationHost())
+        ChosenNavigator.Voyager -> ComposeApp(platformNavigation, GetVoyagerNavigationHost())
+        ChosenNavigator.Jetpack -> ComposeApp(platformNavigation, GetJetpackNavigationHost())
     }
 }
 
@@ -48,38 +40,20 @@ private fun ChooseNavigatorView(
     ) {
         Button(
             modifier = Modifier.fillMaxWidth(),
-            onClick = { onNavigatorChosen(ChosenNavigator.Multiplatform) },
+            onClick = { onNavigatorChosen(ChosenNavigator.Voyager) },
         ) {
-            Text("Default (Voyager) Navigator")
+            Text("Voyager Navigator")
         }
         Button(
             modifier = Modifier.fillMaxWidth(),
-            onClick = { onNavigatorChosen(ChosenNavigator.Android) },
+            onClick = { onNavigatorChosen(ChosenNavigator.Jetpack) },
         ) {
-            Text("JetPack (Android) Navigator")
+            Text("Jetpack Navigator")
         }
     }
 }
 
-internal class GetJetpackNavigationHost : NavigatorProvider {
-
-    @SuppressLint("ComposableNaming")
-    @Composable
-    override fun invoke(
-        navigator: Navigator,
-    ) {
-        JetpackNavigationHost(navigator)
-    }
-
-    @Composable
-    override fun rememberNavigator(
-        startDestination: ScreenDestination,
-        graph: NavigationGraph,
-        parent: Navigator?,
-    ): Navigator = rememberJetpackNavigator(startDestination, graph, parent)
-}
-
 private enum class ChosenNavigator {
-    Multiplatform,
-    Android,
+    Voyager,
+    Jetpack,
 }

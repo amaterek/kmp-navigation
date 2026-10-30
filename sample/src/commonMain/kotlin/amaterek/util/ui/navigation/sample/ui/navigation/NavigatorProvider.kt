@@ -3,9 +3,9 @@ package amaterek.util.ui.navigation.sample.ui.navigation
 import amaterek.util.ui.navigation.NavigationGraph
 import amaterek.util.ui.navigation.Navigator
 import amaterek.util.ui.navigation.VoyagerNavigationHost
-import amaterek.util.ui.navigation.VoyagerNavigator
-import amaterek.util.ui.navigation.annotation.InternalNavigation
 import amaterek.util.ui.navigation.destination.ScreenDestination
+import amaterek.util.ui.navigation.jetpack.JetpackNavigationHost
+import amaterek.util.ui.navigation.jetpack.rememberJetpackNavigator
 import amaterek.util.ui.navigation.rememberVoyagerNavigator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -26,16 +26,13 @@ internal interface NavigatorProvider {
     ): Navigator
 }
 
-internal class GetDefaultNavigationHost : NavigatorProvider {
+internal class GetVoyagerNavigationHost : NavigatorProvider {
 
-    @OptIn(InternalNavigation::class)
     @Composable
     override fun invoke(
         navigator: Navigator,
     ) {
-        VoyagerNavigationHost(
-            navigator = navigator as VoyagerNavigator,
-        )
+        VoyagerNavigationHost(navigator)
     }
 
     @Composable
@@ -44,4 +41,21 @@ internal class GetDefaultNavigationHost : NavigatorProvider {
         graph: NavigationGraph,
         parent: Navigator?,
     ): Navigator = rememberVoyagerNavigator(startDestination, graph, parent)
+}
+
+internal class GetJetpackNavigationHost : NavigatorProvider {
+
+    @Composable
+    override fun invoke(
+        navigator: Navigator,
+    ) {
+        JetpackNavigationHost(navigator)
+    }
+
+    @Composable
+    override fun rememberNavigator(
+        startDestination: ScreenDestination,
+        graph: NavigationGraph,
+        parent: Navigator?,
+    ): Navigator = rememberJetpackNavigator(startDestination, graph, parent)
 }

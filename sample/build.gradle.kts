@@ -45,6 +45,7 @@ kotlin {
         val desktopMain by getting
 
         commonMain.dependencies {
+            implementation(projects.navigation.jetpack)
             implementation(projects.navigation.voyager)
 
             implementation(libs.compose.components.resources)
@@ -61,8 +62,6 @@ kotlin {
         }
 
         androidMain.dependencies {
-            implementation(projects.navigation.jetpack)
-
             implementation(libs.androidx.activity.compose)
         }
 
