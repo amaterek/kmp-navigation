@@ -1,10 +1,11 @@
 package amaterek.util.ui.navigation.sample.ui.screen.main.home.forresultdialog
 
 import amaterek.util.ui.navigation.destination.DialogDestination
-import amaterek.util.ui.navigation.serialization.Serializable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.window.DialogProperties
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class HomeForResultDialogDestination(val level: Int) : DialogDestination {
 
     @Composable
@@ -19,6 +20,6 @@ data class HomeForResultDialogDestination(val level: Int) : DialogDestination {
             dismissOnClickOutside = false,
         )
 
-        data class ForResultDialogDestinationResult(val value: String) : Serializable
+        data class ForResultDialogDestinationResult(val value: String)
     }
 }

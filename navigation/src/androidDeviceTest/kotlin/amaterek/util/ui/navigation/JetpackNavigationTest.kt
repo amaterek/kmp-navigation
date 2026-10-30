@@ -1,5 +1,6 @@
 package amaterek.util.ui.navigation
 
+import amaterek.util.ui.navigation.common.InstanceDestination
 import amaterek.util.ui.navigation.jetpack.rememberJetpackNavigator
 import amaterek.util.ui.navigation.transition.NoneScreenTransition
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -14,7 +15,11 @@ class JetpackNavigationTest : CommonNavigationTest(
 ) {
 
     @Test
-    override fun displaysStartInstanceDestination() {
-        // Start destination with argument is not supported by JetpackNavigator
+    fun navigateToDestinationWithSpecialCharacters() = test {
+        expectStartDestination(InstanceDestination("start ?&=/%#+ żółć {\"json\"}"))
+
+        val destination = InstanceDestination("next ?&=/%#+ ąę 🚀 {\"json\": [1, 2]}")
+        expectDestination(destination) { navigateTo(it) }
+        destination.expectLastIndexInBackStack(1)
     }
 }

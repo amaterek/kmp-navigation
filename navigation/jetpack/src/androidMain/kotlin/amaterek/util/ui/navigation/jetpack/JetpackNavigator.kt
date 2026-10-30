@@ -1,5 +1,3 @@
-@file:Suppress("NOTHING_TO_INLINE")
-
 package amaterek.util.ui.navigation.jetpack
 
 import amaterek.util.ui.navigation.NavigationGraph
@@ -15,7 +13,7 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavOptionsBuilder
-import androidx.navigation.navOptions
+import androidx.savedstate.read
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,12 +21,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlin.reflect.KClass
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.json.Json
 
+@Suppress("TooManyFunctions")
 @SuppressLint("RestrictedApi")
 @InternalNavigation
 class JetpackNavigator(
-    internal val startDestination: ScreenDestination,
+    private val startDestination: ScreenDestination,
     internal val navHostController: NavHostController,
     internal val graph: NavigationGraph,
     private val coroutineScope: CoroutineScope,
@@ -36,36 +36,35 @@ class JetpackNavigator(
     internal val defaultTransition: ScreenTransition,
 ) : BaseNavigator(graph.destinations, parent) {
 
+    private val json = Json { serializersModule = graph.serializersModule }
+
+    private val entriesByRoute = graph.entries.values.associateBy { it.route }
+
+    internal val startEntry = startDestination.graphEntry()
+
+    internal val startDestinationArgument = encode(startDestination)
+
     private val screenDestinationsMap = mutableMapOf<String, ScreenDestination>()
 
-    internal fun transitionOf(
-        navBackStackEntry: NavBackStackEntry,
-        destinationClass: KClass<out ScreenDestination>,
-    ): ScreenTransition = getDestination(navBackStackEntry, destinationClass).transition ?: defaultTransition
+    // Results aren't serializable, so they're kept in memory instead of the entry's SavedStateHandle
+    private val resultFlowsMap = mutableMapOf<String, MutableStateFlow<Any?>>()
 
-    internal fun getDestination(navBackStackEntry: NavBackStackEntry, destinationClass: KClass<out ScreenDestination>): ScreenDestination {
-        var destination = screenDestinationsMap[navBackStackEntry.id]
-        if (destination == null) {
-            destination = destinationClass.destination(navBackStackEntry)
-            screenDestinationsMap[navBackStackEntry.id] = destination
-        }
-        return destination
-    }
+    internal fun getDestination(navBackStackEntry: NavBackStackEntry): ScreenDestination =
+        screenDestinationsMap.getOrPut(navBackStackEntry.id) { decode(navBackStackEntry) }
+
+    internal fun transitionOf(navBackStackEntry: NavBackStackEntry): ScreenTransition =
+        getDestination(navBackStackEntry).transition ?: defaultTransition
 
     private inner class JetpackBackStack : Navigator.BackStack {
 
-        private val _currentEntryFlow = MutableStateFlow(startDestination)
+        private val _currentDestinationFlow = MutableStateFlow(startDestination)
 
         init {
             navHostController.currentBackStackEntryFlow
                 .onEach { navBackStackEntry ->
-                    var currentDestination: ScreenDestination? = screenDestinationsMap[navBackStackEntry.id]
-                    if (currentDestination == null) {
-                        val destinationClass = navBackStackEntry.destination.route!!.routeToScreenDestinationClass()
-                        currentDestination = getDestination(navBackStackEntry, destinationClass)
-                    }
-                    purgeScreenDestinationsMap()
-                    _currentEntryFlow.value = currentDestination
+                    val currentDestination = getDestination(navBackStackEntry)
+                    purgeRemovedEntries()
+                    _currentDestinationFlow.value = currentDestination
                 }
                 .launchIn(coroutineScope)
         }
@@ -73,33 +72,26 @@ class JetpackNavigator(
         override val size: Int
             get() = navHostController.currentBackStack.value.size - 1
 
-        override val currentDestinationFlow: StateFlow<ScreenDestination> = _currentEntryFlow.asStateFlow()
+        override val currentDestinationFlow: StateFlow<ScreenDestination> = _currentDestinationFlow.asStateFlow()
 
         override fun lastIndexOf(destination: ScreenDestination): Int {
-            if (destination::class.objectInstance != null) return lastIndexOf(destination::class)
-            val baseRoute = destination.baseRoute
-            val argument = destination.argument?.let { "{$it}" }
+            val route = graph.entries[destination::class]?.route ?: return -1
             return navHostController.currentBackStack.value
-                .indexOfLast { it.destination.route == baseRoute && it.arguments?.getString(ArgumentsName) == argument }
+                .indexOfLast { it.destination.route == route && getDestination(it) == destination }
                 .let { if (it >= 0) it - 1 else it }
         }
 
         override fun lastIndexOf(destination: GraphDestination): Int {
-            val baseRoute = destination.baseRoute
+            val route = graph.entries[destination]?.route ?: return -1
             return navHostController.currentBackStack.value
-                .indexOfLast { it.destination.route == baseRoute }
+                .indexOfLast { it.destination.route == route }
                 .let { if (it >= 0) it - 1 else it }
         }
 
-        private fun purgeScreenDestinationsMap() {
-            val backStack = navHostController.currentBackStack.value
-            backStack.forEach { navBackStackEntry ->
-                navBackStackEntry.id.let {
-                    if (screenDestinationsMap.contains(it).not()) {
-                        screenDestinationsMap.remove(it)
-                    }
-                }
-            }
+        private fun purgeRemovedEntries() {
+            val ids = navHostController.currentBackStack.value.mapTo(mutableSetOf()) { it.id }
+            screenDestinationsMap.keys.retainAll(ids)
+            resultFlowsMap.keys.retainAll(ids)
         }
     }
 
@@ -108,12 +100,12 @@ class JetpackNavigator(
     override fun getResultFlow(navigationResultHandler: Any): Flow<Any?> {
         // JetpackNavigationHost provides the NavBackStackEntry as the navigation result handler
         val backStackEntry = navigationResultHandler as NavBackStackEntry
-        return backStackEntry.savedStateHandle.getStateFlow(ResultFlowKey, null)
+        return resultFlowOf(backStackEntry)
     }
 
     override fun setResult(result: Any?) {
         val currentBackStackEntry = navHostController.currentBackStackEntry ?: return
-        currentBackStackEntry.savedStateHandle[ResultFlowKey] = result
+        resultFlowOf(currentBackStackEntry).value = result
     }
 
     override fun doNavigateBack() {
@@ -143,9 +135,13 @@ class JetpackNavigator(
             if (replaceWith != null) {
                 repeat(currentBackStack.value.size - 2) { popBackStack() }
                 navigateToScreenDestination(replaceWith) {
-                    popUpTo(id = currentBackStack.value.first().destination.id)
+                    popUpTo(route = currentBackStack.value[1].destination.route!!) {
+                        this.inclusive = true
+                    }
                 }
-            } else error("Backstack can not be empty")
+            } else {
+                error("Backstack can not be empty")
+            }
         } else {
             repeat(currentBackStack.value.size - 2) { popBackStack() }
             replaceWith?.let { navigateTo(it) }
@@ -165,15 +161,16 @@ class JetpackNavigator(
     }
 
     private fun doPopUpTo(destination: GraphDestination, inclusive: Boolean, replaceWith: ScreenDestination?) {
+        val route = graph.entries.getValue(destination).route
         if (replaceWith != null) {
             navHostController.navigateToScreenDestination(replaceWith) {
-                popUpTo(route = destination.baseRoute) {
+                popUpTo(route = route) {
                     this.inclusive = inclusive
                 }
             }
         } else {
             navHostController.popBackStack(
-                route = destination.baseRoute,
+                route = route,
                 inclusive = inclusive,
             )
         }
@@ -182,14 +179,30 @@ class JetpackNavigator(
     override fun doPush(destination: ScreenDestination) {
         navHostController.navigateToScreenDestination(destination)
     }
-}
 
-private inline fun NavController.navigateToScreenDestination(
-    destination: ScreenDestination,
-    noinline builder: (NavOptionsBuilder.() -> Unit)? = null,
-) {
-    navigate(destination.route, builder?.let { navOptions(it) })
-}
+    private fun NavController.navigateToScreenDestination(
+        destination: ScreenDestination,
+        builder: (NavOptionsBuilder.() -> Unit)? = null,
+    ) {
+        val route = "${destination.graphEntry().name}?$ArgumentsName=${encode(destination).encodeRouteArgument()}"
+        if (builder != null) navigate(route, builder) else navigate(route)
+    }
 
-@Suppress("TopLevelPropertyNaming")
-private const val ResultFlowKey = "navigation_result"
+    private fun resultFlowOf(navBackStackEntry: NavBackStackEntry): MutableStateFlow<Any?> =
+        resultFlowsMap.getOrPut(navBackStackEntry.id) { MutableStateFlow(null) }
+
+    private fun ScreenDestination.graphEntry(): NavigationGraph.Entry =
+        graph.entries[this::class] ?: destinationNotFoundInGraphError(this)
+
+    @Suppress("UNCHECKED_CAST")
+    private fun encode(destination: ScreenDestination): String =
+        json.encodeToString(destination.graphEntry().serializer as KSerializer<ScreenDestination>, destination)
+
+    private fun decode(navBackStackEntry: NavBackStackEntry): ScreenDestination {
+        val route = navBackStackEntry.destination.route
+        val entry = entriesByRoute[route] ?: error("Unknown destination route: $route")
+        val argument = navBackStackEntry.arguments?.read { getStringOrNull(ArgumentsName) }
+            ?: error("Missing destination argument for route: $route")
+        return json.decodeFromString(entry.serializer, argument)
+    }
+}

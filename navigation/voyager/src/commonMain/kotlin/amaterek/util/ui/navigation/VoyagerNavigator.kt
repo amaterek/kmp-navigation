@@ -7,7 +7,6 @@ import amaterek.util.ui.navigation.destination.GraphDestination
 import amaterek.util.ui.navigation.destination.NavigatorDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.internal.BaseNavigator
-import amaterek.util.ui.navigation.serialization.SkipForSerialization
 import amaterek.util.ui.navigation.transition.ScreenTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -18,8 +17,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.json.Json
+import kotlin.jvm.Transient
 import cafe.adriel.voyager.navigator.Navigator as VoyagerHavHostController
 
+@Suppress("TooManyFunctions")
 @InternalNavigation
 @Stable
 class VoyagerNavigator internal constructor(
@@ -29,12 +32,33 @@ class VoyagerNavigator internal constructor(
     internal val defaultTransition: ScreenTransition,
 ) : BaseNavigator(graph.destinations, parent) {
 
+    private val json = Json { serializersModule = graph.serializersModule }
+
+    private val entriesByName = graph.entries.values.associateBy { it.name }
+
     // HACK Nullable: For Voyager - navigator is available later
     internal var navHostController: VoyagerHavHostController? = null
     internal val currentDestinationFlow = MutableStateFlow(startBackStack.last())
 
     internal fun dialogPropertiesOf(destination: ScreenDestination): DialogProperties? =
         graph.entries[destination::class]?.dialogProperties
+
+    @Suppress("UNCHECKED_CAST")
+    internal fun backStackEntryOf(destination: ScreenDestination): VoyagerBackStackEntry {
+        val graphEntry = graph.entries[destination::class] ?: destinationNotFoundInGraphError(destination)
+        val serializer = graphEntry.serializer as KSerializer<ScreenDestination>
+        return VoyagerBackStackEntry(graphEntry.name, json.encodeToString(serializer, destination), destination)
+    }
+
+    internal fun destinationOf(backStackEntry: VoyagerBackStackEntry): ScreenDestination =
+        backStackEntry.destination ?: run {
+            val graphEntry = entriesByName[backStackEntry.name] ?: error("Unknown destination: ${backStackEntry.name}")
+            json.decodeFromString(graphEntry.serializer, backStackEntry.encodedDestination)
+                .also { backStackEntry.destination = it }
+        }
+
+    private val Screen.destination: ScreenDestination
+        get() = destinationOf(this as VoyagerBackStackEntry)
 
     private inner class VoyagerBackStack : Navigator.BackStack {
 
@@ -45,10 +69,10 @@ class VoyagerNavigator internal constructor(
             get() = this@VoyagerNavigator.currentDestinationFlow.asStateFlow()
 
         override fun lastIndexOf(destination: ScreenDestination): Int =
-            navHostController?.items?.indexOfLast { (it as VoyagerBackStackEntry).destination == destination } ?: -1
+            navHostController?.items?.indexOfLast { it.destination == destination } ?: -1
 
         override fun lastIndexOf(destination: GraphDestination): Int =
-            navHostController?.items?.indexOfLast { (it as VoyagerBackStackEntry).destination::class == destination } ?: -1
+            navHostController?.items?.indexOfLast { it.destination::class == destination } ?: -1
     }
 
     override val backStack: Navigator.BackStack = VoyagerBackStack()
@@ -90,20 +114,20 @@ class VoyagerNavigator internal constructor(
     ) = doIfNavControllerAvailableOrThrow {
         if (inclusive) {
             if (replaceWith != null) {
-                replaceAll(VoyagerBackStackEntry(replaceWith))
+                replaceAll(backStackEntryOf(replaceWith))
             } else error("Backstack can not be empty")
         } else {
             val firstVoyagerBackStackEntry = items.first()
             popUntil { it === firstVoyagerBackStackEntry }
-            replaceWith?.let { push(VoyagerBackStackEntry(it)) }
+            replaceWith?.let { push(backStackEntryOf(it)) }
         }
     }
 
     private fun doPopUpToCurrent(inclusive: Boolean, replaceWith: ScreenDestination?) = doIfNavControllerAvailableOrThrow {
         when {
             replaceWith == null -> if (inclusive) pop()
-            inclusive -> replace(VoyagerBackStackEntry(replaceWith))
-            else /* !inclusive */ -> push(VoyagerBackStackEntry(replaceWith))
+            inclusive -> replace(backStackEntryOf(replaceWith))
+            else /* !inclusive */ -> push(backStackEntryOf(replaceWith))
         }
     }
 
@@ -112,8 +136,8 @@ class VoyagerNavigator internal constructor(
         replaceWith: ScreenDestination?,
         condition: (ScreenDestination) -> Boolean,
     ) = doIfNavControllerAvailableOrThrow {
-        val replaceWithEntry = replaceWith?.let { VoyagerBackStackEntry(it) }
-        val index = items.indexOfLast { condition((it as VoyagerBackStackEntry).destination) }
+        val replaceWithEntry = replaceWith?.let { backStackEntryOf(it) }
+        val index = items.indexOfLast { condition(it.destination) }
         when {
             index < 0 -> replaceWithEntry?.let { push(it) }
             index == 0 -> doPopUpToFirst(inclusive, replaceWith)
@@ -132,7 +156,7 @@ class VoyagerNavigator internal constructor(
     }
 
     override fun doPush(destination: ScreenDestination) = doIfNavControllerAvailableOrThrow {
-        push(VoyagerBackStackEntry(destination))
+        push(backStackEntryOf(destination))
     }
 
     private inline fun doIfNavControllerAvailableOrThrow(action: VoyagerHavHostController.() -> Unit) {
@@ -140,18 +164,30 @@ class VoyagerNavigator internal constructor(
     }
 }
 
+/**
+ * Voyager saves its back stack with Java serialization, so the entry keeps its destination as JSON and
+ * [VoyagerNavigator.destinationOf] decodes it again after the back stack is restored.
+ */
 @Stable
 internal class VoyagerBackStackEntry(
-    internal val destination: ScreenDestination,
+    internal val name: String,
+    internal val encodedDestination: String,
+    destination: ScreenDestination,
 ) : Screen {
 
-    @delegate:SkipForSerialization
-    internal val result: MutableStateFlow<Any?> by lazy { MutableStateFlow(null) }
+    @Transient
+    internal var destination: ScreenDestination? = destination
 
-    override val key: ScreenKey = destination.toString() // FIXME check if it is ok?
+    @Transient
+    private var resultFlow: MutableStateFlow<Any?>? = null
+
+    internal val result: MutableStateFlow<Any?>
+        get() = resultFlow ?: MutableStateFlow<Any?>(null).also { resultFlow = it }
+
+    override val key: ScreenKey = "$name$encodedDestination"
 
     @Composable
     override fun Content() {
-        destination.Content()
+        checkNotNull(destination).Content()
     }
 }

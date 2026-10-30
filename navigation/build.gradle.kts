@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.kotlinCompose.compiler)
+    alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.androidMultiplatformLibrary)
     id("maven-publish")
 }
@@ -58,6 +59,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(libs.coroutines.core)
+            api(libs.kotlinx.serialization.core)
 
             implementation(libs.compose.foundation)
             implementation(libs.compose.ui)

@@ -60,12 +60,12 @@ fun VoyagerNavigationHost(
         LocalNavigator provides navigator,
     ) {
         VNavigator(
-            screens = navigator.startBackStack.map { VoyagerBackStackEntry(it) },
+            screens = navigator.startBackStack.map { navigator.backStackEntryOf(it) },
             onBackPressed = { false },
         ) { vNavigator ->
             navigator.navHostController = vNavigator
             LaunchedEffect(vNavigator.key) {
-                snapshotFlow { (vNavigator.lastItem as VoyagerBackStackEntry).destination }
+                snapshotFlow { navigator.destinationOf(vNavigator.lastItem as VoyagerBackStackEntry) }
                     .onEach { navigator.currentDestinationFlow.value = it }
                     .launchIn(this)
             }
@@ -73,7 +73,7 @@ fun VoyagerNavigationHost(
             val screenItem by remember {
                 derivedStateOf {
                     vNavigator.items.last {
-                        navigator.dialogPropertiesOf((it as VoyagerBackStackEntry).destination) == null
+                        navigator.dialogPropertiesOf(navigator.destinationOf(it as VoyagerBackStackEntry)) == null
                     } as VoyagerBackStackEntry
                 }
             }
@@ -81,18 +81,18 @@ fun VoyagerNavigationHost(
             val dialogItem by remember {
                 derivedStateOf {
                     vNavigator.items.lastOrNull {
-                        navigator.dialogPropertiesOf((it as VoyagerBackStackEntry).destination) != null
+                        navigator.dialogPropertiesOf(navigator.destinationOf(it as VoyagerBackStackEntry)) != null
                     } as? VoyagerBackStackEntry
                 }
             }
 
-            ScreenItem(vNavigator, screenItem, navigator.defaultTransition)
+            ScreenItem(vNavigator, navigator, screenItem)
 
             dialogItem?.let {
                 Dialog(
                     onDismissRequest = { navigator.navigateTo(PreviousDestination) },
-                    properties = navigator.dialogPropertiesOf(it.destination) ?: DialogProperties(),
-                    content = { vNavigator.ScreenContent(it) },
+                    properties = navigator.dialogPropertiesOf(navigator.destinationOf(it)) ?: DialogProperties(),
+                    content = { vNavigator.ScreenContent(navigator, it) },
                 )
             }
         }
@@ -122,17 +122,17 @@ fun rememberVoyagerNavigator(
 @OptIn(ExperimentalAnimationApi::class)
 @InternalNavigation
 @Composable
-private fun ScreenItem(vNavigator: VNavigator, screen: VoyagerBackStackEntry, defaultTransition: ScreenTransition) {
+private fun ScreenItem(vNavigator: VNavigator, navigator: VoyagerNavigator, screen: VoyagerBackStackEntry) {
     AnimatedContent(
         modifier = Modifier.fillMaxSize(),
         targetState = screen,
         transitionSpec = {
             val item = targetState
             val lastItem = initialState
-            val transition = item.destination.transition ?: defaultTransition
+            val transition = navigator.destinationOf(item).transition ?: navigator.defaultTransition
             val isPop = vNavigator.lastEvent == StackEvent.Pop
             val lastTransition = if (item != lastItem) {
-                lastItem.destination.transition ?: defaultTransition
+                navigator.destinationOf(lastItem).transition ?: navigator.defaultTransition
             } else null
             // Behaviour compatible with JetPack navigation
             val (enterTransition, exitTransition) = if (isPop) {
@@ -156,7 +156,7 @@ private fun ScreenItem(vNavigator: VNavigator, screen: VoyagerBackStackEntry, de
 
         // TODO Update destination's lifecycle state
 
-        vNavigator.ScreenContent(currentItem)
+        vNavigator.ScreenContent(navigator, currentItem)
         if (isTransitionRunning) {
             Box(
                 modifier = Modifier
@@ -170,9 +170,9 @@ private fun ScreenItem(vNavigator: VNavigator, screen: VoyagerBackStackEntry, de
 
 @InternalNavigation
 @Composable
-private fun VNavigator.ScreenContent(screen: VoyagerBackStackEntry) {
+private fun VNavigator.ScreenContent(navigator: VoyagerNavigator, screen: VoyagerBackStackEntry) {
     CompositionLocalProvider(
-        LocalDestination provides screen.destination,
+        LocalDestination provides navigator.destinationOf(screen),
         LocalNavigationResultHandler provides screen,
     ) {
         saveableState("currentScreen", screen) {

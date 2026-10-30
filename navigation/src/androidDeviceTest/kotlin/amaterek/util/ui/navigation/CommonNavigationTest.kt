@@ -29,7 +29,7 @@ abstract class CommonNavigationTest(
     }
 
     @Test
-    open fun displaysStartInstanceDestination() = test {
+    fun displaysStartInstanceDestination() = test {
         expectStartDestination(InstanceDestination("instance"))
     }
 

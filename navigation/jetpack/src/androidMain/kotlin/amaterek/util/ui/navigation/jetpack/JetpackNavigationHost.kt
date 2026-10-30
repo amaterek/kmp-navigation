@@ -1,4 +1,3 @@
-@file:Suppress("NOTHING_TO_INLINE")
 @file:OptIn(InternalNavigation::class)
 
 package amaterek.util.ui.navigation.jetpack
@@ -14,16 +13,16 @@ import amaterek.util.ui.navigation.transition.FadeScreenTransition
 import amaterek.util.ui.navigation.transition.ScreenTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
-import kotlin.reflect.KClass
+import androidx.navigation.navArgument
 
 @Composable
 fun JetpackNavigationHost(
@@ -32,7 +31,7 @@ fun JetpackNavigationHost(
     parent: Navigator? = null,
     defaultTransition: ScreenTransition = FadeScreenTransition,
 ) = JetpackNavigationHost(
-    navigator = rememberJetpackNavigator(startDestination, graph, parent, defaultTransition) as JetpackNavigator,
+    navigator = rememberJetpackNavigator(startDestination, graph, parent, defaultTransition),
 )
 
 @Composable
@@ -43,10 +42,10 @@ fun JetpackNavigationHost(
     CompositionLocalProvider(LocalNavigator provides navigator) {
         NavHost(
             navController = navigator.navHostController,
-            startDestination = navigator.startDestination.route,
+            startDestination = navigator.startEntry.route,
         ) {
-            navigator.graph.entries.forEach { (destinationClass, entry) ->
-                addDestination(navigator, destinationClass, entry)
+            navigator.graph.entries.values.forEach { entry ->
+                addDestination(navigator, entry)
             }
         }
     }
@@ -61,56 +60,47 @@ fun rememberJetpackNavigator(
 ): Navigator {
     val navController = rememberNavController()
     val coroutineScope = rememberCoroutineScope()
-    return remember { JetpackNavigator(startDestination, navController, graph, coroutineScope, parent, defaultTransition) }
+    return remember {
+        JetpackNavigator(startDestination, navController, graph, coroutineScope, parent, defaultTransition)
+    }
 }
 
-@Stable
-private fun NavGraphBuilder.addDestination(
-    navigator: JetpackNavigator,
-    destinationClass: KClass<out ScreenDestination>,
-    entry: NavigationGraph.Entry,
-) {
-    @Suppress("UNCHECKED_CAST")
-    val destinationRoute = (destinationClass as KClass<ScreenDestination>).baseRoute
+private fun NavGraphBuilder.addDestination(navigator: JetpackNavigator, entry: NavigationGraph.Entry) {
+    val arguments = listOf(
+        navArgument(ArgumentsName) {
+            type = NavType.StringType
+            nullable = true
+            // Start destination is navigated by route pattern, so its arguments are passed as default value
+            defaultValue = if (entry == navigator.startEntry) navigator.startDestinationArgument else null
+        },
+    )
     val dialogProperties = entry.dialogProperties
     if (dialogProperties != null) {
         dialog(
-            route = destinationRoute,
+            route = entry.route,
+            arguments = arguments,
             dialogProperties = dialogProperties,
-            content = { navBackStackEntry ->
-                DestinationContent(
-                    destinationClass = destinationClass,
-                    navBackStackEntry = navBackStackEntry,
-                    navigator = navigator,
-                )
-            }
+            content = { navBackStackEntry -> DestinationContent(navigator, navBackStackEntry) },
         )
     } else {
         composable(
-            route = destinationRoute,
-            enterTransition = { navigator.transitionOf(targetState, destinationClass).enter },
-            exitTransition = { navigator.transitionOf(initialState, destinationClass).exit },
-            popEnterTransition = { navigator.transitionOf(targetState, destinationClass).popEnter },
-            popExitTransition = { navigator.transitionOf(initialState, destinationClass).popExit },
-            content = { navBackStackEntry ->
-                DestinationContent(
-                    destinationClass = destinationClass,
-                    navBackStackEntry = navBackStackEntry,
-                    navigator = navigator,
-                )
-            }
+            route = entry.route,
+            arguments = arguments,
+            enterTransition = { navigator.transitionOf(targetState).enter },
+            exitTransition = { navigator.transitionOf(initialState).exit },
+            popEnterTransition = { navigator.transitionOf(targetState).popEnter },
+            popExitTransition = { navigator.transitionOf(initialState).popExit },
+            content = { navBackStackEntry -> DestinationContent(navigator, navBackStackEntry) },
         )
     }
 }
 
-@OptIn(InternalNavigation::class)
 @Composable
-private inline fun DestinationContent(
-    destinationClass: KClass<out ScreenDestination>,
-    navBackStackEntry: NavBackStackEntry,
+private fun DestinationContent(
     navigator: JetpackNavigator,
+    navBackStackEntry: NavBackStackEntry,
 ) {
-    val destination = remember { navigator.getDestination(navBackStackEntry, destinationClass) }
+    val destination = remember(navBackStackEntry) { navigator.getDestination(navBackStackEntry) }
     CompositionLocalProvider(
         LocalDestination provides destination,
         LocalNavigationResultHandler provides navBackStackEntry,
@@ -118,7 +108,3 @@ private inline fun DestinationContent(
         destination.Content()
     }
 }
-
-@Stable
-internal inline fun KClass<out ScreenDestination>.destination(navBackStackEntry: NavBackStackEntry): ScreenDestination =
-    objectInstance ?: navBackStackEntry.arguments!!.getString(ArgumentsName)!!.deserializeDestination()

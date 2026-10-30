@@ -49,7 +49,7 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.compose.runtime)
             implementation(libs.androidx.navigation.compose)
-            implementation(libs.kotlin.reflect)
+            implementation(libs.kotlinx.serialization.json)
         }
     }
 }

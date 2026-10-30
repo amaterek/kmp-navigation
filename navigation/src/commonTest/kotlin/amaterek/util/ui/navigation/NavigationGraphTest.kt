@@ -5,6 +5,7 @@ import amaterek.util.ui.navigation.destination.DialogDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.window.DialogProperties
+import kotlinx.serialization.Serializable
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -61,12 +62,14 @@ class NavigationGraphTest {
 
 private val testDialogProperties = DialogProperties(usePlatformDefaultWidth = false)
 
+@Serializable
 private data object TestScreenDestination : ScreenDestination {
 
     @Composable
     override fun Content() = Unit
 }
 
+@Serializable
 private data object TestDialogDestination : DialogDestination {
 
     @Composable

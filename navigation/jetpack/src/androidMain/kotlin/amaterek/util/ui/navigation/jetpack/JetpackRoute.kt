@@ -1,71 +1,35 @@
 package amaterek.util.ui.navigation.jetpack
 
-import amaterek.util.ui.navigation.destination.ScreenDestination
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
-import kotlin.io.encoding.Base64
-import kotlin.io.encoding.ExperimentalEncodingApi
-import kotlin.reflect.KClass
+import amaterek.util.ui.navigation.NavigationGraph
+import amaterek.util.ui.navigation.annotation.InternalNavigation
 
-internal val ScreenDestination.baseRoute: String
-    get() = this::class.definitionOfArgument.let {
-        if (it.isNullOrEmpty()) routeWithoutArgument else "$routeWithoutArgument={$it}"
-    }
+@OptIn(InternalNavigation::class)
+internal val NavigationGraph.Entry.route: String
+    get() = "$name?$ArgumentsName={$ArgumentsName}"
 
-internal val KClass<out ScreenDestination>.baseRoute: String
-    get() = definitionOfArgument.let {
-        if (it.isNullOrEmpty()) routeWithoutArgument else "$routeWithoutArgument={$it}"
-    }
-
-internal val ScreenDestination.route: String
-    get() = argument.let {
-        if (it.isNullOrEmpty()) routeWithoutArgument else "$routeWithoutArgument={$it}"
-    }
-
-internal inline val ScreenDestination.argument: String?
-    get() {
-        if (this::class.objectInstance != null) return null
-        return serializeDestination()
-    }
-
-private inline val ScreenDestination.routeWithoutArgument: String
-    get() = this::class.routeWithoutArgument
-
-private inline val KClass<out ScreenDestination>.routeWithoutArgument: String
-    get() = qualifiedName!!
-        .replace('$', '-')
-
-private inline val KClass<out ScreenDestination>.definitionOfArgument: String?
-    get() {
-        if (objectInstance != null) return null
-        return ArgumentsName
-    }
-
-@OptIn(ExperimentalEncodingApi::class)
-private fun ScreenDestination.serializeDestination(): String =
-    ByteArrayOutputStream().use { outputStream ->
-        ObjectOutputStream(outputStream).use {
-            it.writeObject(this)
+/**
+ * Percent-encodes the value to be used as route query argument. Navigation decodes it back.
+ */
+internal fun String.encodeRouteArgument(): String = buildString {
+    encodeToByteArray().forEach { byte ->
+        val char = (byte.toInt() and BYTE_MASK).toChar()
+        if (char.isUnreserved()) {
+            append(char)
+        } else {
+            append('%')
+            append(HEX_DIGITS[byte.toInt() shr HALF_BYTE_BITS and HALF_BYTE_MASK])
+            append(HEX_DIGITS[byte.toInt() and HALF_BYTE_MASK])
         }
-        Base64.UrlSafe.encode(outputStream.toByteArray())
     }
+}
 
-@OptIn(ExperimentalEncodingApi::class)
-internal fun String.deserializeDestination(): ScreenDestination =
-    trim('{', '}').run {
-        Base64.UrlSafe.decode(this).let { data ->
-            ObjectInputStream(ByteArrayInputStream(data)).use {
-                it.readObject()
-            }
-        } as ScreenDestination
-    }
+private fun Char.isUnreserved(): Boolean =
+    this in 'a'..'z' || this in 'A'..'Z' || this in '0'..'9' || this in UNRESERVED_SYMBOLS
 
 internal const val ArgumentsName = "destination"
 
-@Suppress("UNCHECKED_CAST")
-internal fun String.routeToScreenDestinationClass(): KClass<out ScreenDestination> =
-    lastIndexOf("=")
-        .let { if (it < 0) this else substring(0, it) }
-        .run { Class.forName(replace('-', '$')).kotlin as KClass<out ScreenDestination> }
+private const val UNRESERVED_SYMBOLS = "-._~"
+private const val HEX_DIGITS = "0123456789ABCDEF"
+private const val BYTE_MASK = 0xFF
+private const val HALF_BYTE_MASK = 0x0F
+private const val HALF_BYTE_BITS = 4

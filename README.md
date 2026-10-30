@@ -51,8 +51,13 @@ dependencies {
 
 ### Defining destinations
 
+Destinations are serialized with [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization), so they must
+be annotated with `@Serializable`. Serializers of properties with interface types are registered in the graph with
+`serializersModule(...)`.
+
 ```kotlin
 // Destination without argument
+@Serializable
 data object MyDestination : ScreenDestination {
 
     @Composable
@@ -61,7 +66,8 @@ data object MyDestination : ScreenDestination {
     }
 }
 
-// Destination with argument, all its properties must be serializable
+// Destination with argument
+@Serializable
 data class MyDestinationWithArg(val argument: String) : ScreenDestination {
 
     // Optionally override default screen transition, with a getter so it isn't serialized
@@ -75,6 +81,7 @@ data class MyDestinationWithArg(val argument: String) : ScreenDestination {
 }
 
 // Dialog destination
+@Serializable
 data object MyDialogDestination : DialogDestination {
 
     @Composable
