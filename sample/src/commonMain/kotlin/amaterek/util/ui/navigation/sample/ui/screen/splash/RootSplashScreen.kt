@@ -26,21 +26,21 @@ internal fun RootSplashScreen() {
 
     LifecycleLogger()
 
-    fun finisSplash() {
+    fun finishSplash() {
         navigator.navigateTo(RootMainDestination.replaceAll())
     }
 
     LaunchedEffect(Unit) {
         launch {
             delay(3.seconds)
-            finisSplash()
+            finishSplash()
         }
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .clickable { finisSplash() },
+            .clickable { finishSplash() },
         contentAlignment = Alignment.Center,
     ) {
         Text(
