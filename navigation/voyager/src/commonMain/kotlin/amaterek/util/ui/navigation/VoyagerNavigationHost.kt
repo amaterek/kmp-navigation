@@ -16,6 +16,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
@@ -23,6 +24,8 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
@@ -90,22 +93,37 @@ fun VoyagerNavigationHost(
                 }
             }
 
-            val dialogItem by remember {
+            val dialogItems by remember {
                 derivedStateOf {
-                    vNavigator.items.lastOrNull {
+                    vNavigator.items.takeLastWhile {
                         navigator.dialogPropertiesOf(navigator.destinationOf(it as VoyagerBackStackEntry)) != null
-                    } as? VoyagerBackStackEntry
+                    }.map { it as VoyagerBackStackEntry }
                 }
             }
 
-            ScreenItem(vNavigator, navigator, screenItem)
+            // Like Jetpack navigation, all dialogs above the screen are shown and everything below the top one is
+            // paused
+            MaxLifecycle(if (dialogItems.isEmpty()) Lifecycle.State.RESUMED else Lifecycle.State.STARTED) {
+                ScreenItem(vNavigator, navigator, screenItem)
+            }
 
-            dialogItem?.let {
-                Dialog(
-                    onDismissRequest = { navigator.navigateTo(PreviousDestination) },
-                    properties = navigator.dialogPropertiesOf(navigator.destinationOf(it)) ?: DialogProperties(),
-                    content = { vNavigator.ScreenContent(navigator, it) },
-                )
+            val hostLifecycleOwner = LocalLifecycleOwner.current
+            dialogItems.forEach { dialogItem ->
+                key(dialogItem) {
+                    val maxLifecycle =
+                        if (dialogItem === dialogItems.last()) Lifecycle.State.RESUMED else Lifecycle.State.STARTED
+                    Dialog(
+                        onDismissRequest = { navigator.navigateTo(PreviousDestination) },
+                        properties = navigator.dialogPropertiesOf(navigator.destinationOf(dialogItem))
+                            ?: DialogProperties(),
+                    ) {
+                        // The host's lifecycle, like a Jetpack navigation dialog entry: an Android dialog provides
+                        // the lifecycle of its window to its content
+                        MaxLifecycle(maxLifecycle, parent = hostLifecycleOwner) {
+                            vNavigator.ScreenContent(navigator, dialogItem)
+                        }
+                    }
+                }
             }
         }
     }

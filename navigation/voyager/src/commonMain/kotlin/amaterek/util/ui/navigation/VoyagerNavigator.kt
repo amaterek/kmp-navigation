@@ -119,7 +119,7 @@ class VoyagerNavigator internal constructor(
         } else {
             val firstVoyagerBackStackEntry = items.first()
             popUntil { it === firstVoyagerBackStackEntry }
-            replaceWith?.let { push(backStackEntryOf(it)) }
+            replaceWith?.let { pushEntry(backStackEntryOf(it)) }
         }
     }
 
@@ -127,7 +127,7 @@ class VoyagerNavigator internal constructor(
         when {
             replaceWith == null -> if (inclusive) pop()
             inclusive -> replace(backStackEntryOf(replaceWith))
-            else /* !inclusive */ -> push(backStackEntryOf(replaceWith))
+            else /* !inclusive */ -> pushEntry(backStackEntryOf(replaceWith))
         }
     }
 
@@ -139,14 +139,14 @@ class VoyagerNavigator internal constructor(
         val replaceWithEntry = replaceWith?.let { backStackEntryOf(it) }
         val index = items.indexOfLast { condition(it.destination) }
         when {
-            index < 0 -> replaceWithEntry?.let { push(it) }
+            index < 0 -> replaceWithEntry?.let { pushEntry(it) }
             index == 0 -> doPopUpToFirst(inclusive, replaceWith)
             index == items.lastIndex -> doPopUpToCurrent(inclusive, replaceWith)
             else -> {
                 if (replaceWithEntry != null) {
                     val item = items[index]
                     popUntil { it === item }
-                    if (inclusive) replace(replaceWithEntry) else push(replaceWithEntry)
+                    if (inclusive) replace(replaceWithEntry) else pushEntry(replaceWithEntry)
                 } else {
                     val item = items[index + if (inclusive) -1 else 0]
                     popUntil { it === item }
@@ -156,7 +156,15 @@ class VoyagerNavigator internal constructor(
     }
 
     override fun doPush(destination: ScreenDestination) = doIfNavControllerAvailableOrThrow {
-        push(backStackEntryOf(destination))
+        pushEntry(backStackEntryOf(destination))
+    }
+
+    // Like Jetpack navigation, a screen pushed above dialogs pops them, so back doesn't return to them
+    private fun VoyagerHavHostController.pushEntry(entry: VoyagerBackStackEntry) {
+        if (dialogPropertiesOf(destinationOf(entry)) == null) {
+            while (size > 1 && dialogPropertiesOf(lastItem.destination) != null) pop()
+        }
+        push(entry)
     }
 
     private inline fun doIfNavControllerAvailableOrThrow(action: VoyagerHavHostController.() -> Unit) {

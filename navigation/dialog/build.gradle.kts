@@ -79,6 +79,7 @@ kotlin {
             implementation(projects.navigation.nav3)
             implementation(projects.navigation.voyager)
             implementation(libs.compose.ui.test)
+            implementation(libs.jetbrains.lifecycle.runtime.compose)
             implementation(libs.kotlin.test)
         }
 

@@ -20,11 +20,15 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.currentStateAsState
 import kotlinx.serialization.Serializable
 
 const val ScreenNameTag = "ScreenName"
 
 const val ScreenResultTag = "ScreenResult"
+
+const val ScreenLifecycleTag = "ScreenLifecycle"
 
 const val DialogTag = "Dialog"
 
@@ -61,9 +65,11 @@ interface TestScreenDestination : ScreenDestination {
     @Composable
     override fun Content() {
         val navigationResult by LocalNavigator.current.resultFlow.collectAsState("")
+        val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
         Column(modifier = Modifier.fillMaxSize()) {
             BasicText(modifier = Modifier.testTag(ScreenNameTag), text = name)
             BasicText(modifier = Modifier.testTag(ScreenResultTag), text = navigationResult.toString())
+            BasicText(modifier = Modifier.testTag(ScreenLifecycleTag), text = lifecycleState.name)
         }
     }
 }

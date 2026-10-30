@@ -6,9 +6,11 @@ import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.navigateBack
 import amaterek.util.ui.navigation.navigateBackWithResult
 import amaterek.util.ui.navigation.navigationGraph
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ComposeUiTest
@@ -17,6 +19,9 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.v2.runComposeUiTest
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.currentStateAsState
 import kotlinx.serialization.Serializable
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -85,14 +90,54 @@ abstract class ClosingDialogDestinationTest(private val host: TestNavigationHost
     }
 
     @Test
-    fun delegatesOtherNavigation() = test {
+    fun pausesScreenBelowDialog() = test {
+        composeUiTest.onNodeWithTag(ScreenLifecycleTag).assertTextEquals(Lifecycle.State.RESUMED.name)
+
+        openDialog(ResultDialogDestination)
+        composeUiTest.onNodeWithTag(ScreenLifecycleTag).assertTextEquals(Lifecycle.State.STARTED.name)
+
+        startClosing { dialogNavigator.navigateBack() }
+        expectClosedDialog(result = ResultDialogDestination.dismissResult())
+        composeUiTest.onNodeWithTag(ScreenLifecycleTag).assertTextEquals(Lifecycle.State.RESUMED.name)
+    }
+
+    @Test
+    fun keepsDialogBelowAnotherDialogPaused() = test {
+        openDialog(ResultDialogDestination)
+
+        composeUiTest.runOnUiThread { navigator.navigateTo(NoResultDialogDestination) }
+        composeUiTest.waitForIdle()
+        expectLifecycle(ResultDialogLifecycleTag, Lifecycle.State.STARTED)
+        expectLifecycle(NoResultDialogLifecycleTag, Lifecycle.State.RESUMED)
+        expectLifecycle(ScreenLifecycleTag, Lifecycle.State.STARTED)
+
+        composeUiTest.runOnUiThread { noResultDialogScope.dismiss() }
+        composeUiTest.waitForIdle()
+        composeUiTest.runOnUiThread { noResultDialogScope.onClosed() }
+        composeUiTest.waitForIdle()
+        composeUiTest.onNodeWithTag(NoResultDialogLifecycleTag).assertDoesNotExist()
+        expectLifecycle(ResultDialogLifecycleTag, Lifecycle.State.RESUMED)
+        expectLifecycle(ScreenLifecycleTag, Lifecycle.State.STARTED)
+    }
+
+    @Test
+    fun popsDialogWhenScreenIsOpenedAboveIt() = test {
         openDialog(ResultDialogDestination)
 
         composeUiTest.runOnUiThread { dialogNavigator.navigateTo(TestScreenDestination2) }
-
         composeUiTest.waitForIdle()
+        composeUiTest.onNodeWithTag(DialogTag).assertDoesNotExist()
         composeUiTest.onNodeWithTag(ScreenNameTag).assertTextEquals(TestScreenDestination2.name)
-        assertEquals(navigator.backStack.size - 1, navigator.backStack.lastIndexOf(TestScreenDestination2))
+        assertEquals(-1, navigator.backStack.lastIndexOf(ResultDialogDestination))
+
+        composeUiTest.runOnUiThread { navigator.navigateBack() }
+        composeUiTest.waitForIdle()
+        composeUiTest.onNodeWithTag(DialogTag).assertDoesNotExist()
+        composeUiTest.onNodeWithTag(ScreenNameTag).assertTextEquals(TestScreenDestination1.name)
+    }
+
+    private fun expectLifecycle(tag: String, state: Lifecycle.State) {
+        composeUiTest.onNodeWithTag(tag).assertTextEquals(state.name)
     }
 
     private fun test(block: () -> Unit) = runComposeUiTest {
@@ -146,13 +191,19 @@ private lateinit var dialogScope: ClosingDialogScope<*>
 
 private lateinit var resultDialogScope: ClosingDialogScope<TestDialogResult>
 
+private lateinit var noResultDialogScope: ClosingDialogScope<Nothing>
+
+private const val ResultDialogLifecycleTag = "ResultDialogLifecycle"
+
+private const val NoResultDialogLifecycleTag = "NoResultDialogLifecycle"
+
 @Serializable
 private data object ResultDialogDestination : ClosingDialogDestination<TestDialogResult>() {
 
     @Composable
     override fun ClosingDialogScope<TestDialogResult>.DialogContent() {
         SideEffect { resultDialogScope = this }
-        TestDialogContent()
+        TestDialogContent(ResultDialogLifecycleTag)
     }
 
     override fun dismissResult() = TestDialogResult("dismissed")
@@ -163,19 +214,27 @@ private data object NoResultDialogDestination : ClosingDialogDestination<Nothing
 
     @Composable
     override fun ClosingDialogScope<Nothing>.DialogContent() {
-        TestDialogContent()
+        SideEffect { noResultDialogScope = this }
+        TestDialogContent(NoResultDialogLifecycleTag)
     }
 }
 
 @Composable
-private fun ClosingDialogScope<*>.TestDialogContent() {
+private fun ClosingDialogScope<*>.TestDialogContent(lifecycleTag: String) {
     val navigator = LocalNavigator.current
+    val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
     SideEffect {
         dialogNavigator = navigator
         dialogScope = this
     }
-    BasicText(
-        modifier = Modifier.testTag(DialogTag),
-        text = isClosing.toString(),
-    )
+    Column {
+        BasicText(
+            modifier = Modifier.testTag(DialogTag),
+            text = isClosing.toString(),
+        )
+        BasicText(
+            modifier = Modifier.testTag(lifecycleTag),
+            text = lifecycleState.name,
+        )
+    }
 }
