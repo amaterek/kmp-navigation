@@ -67,8 +67,8 @@ class VoyagerNavigator internal constructor(
         override val size: Int
             get() = navHostController?.size ?: 0
 
-        override val currentDestinationFlow: StateFlow<ScreenDestination>
-            get() = this@VoyagerNavigator.currentDestinationFlow.asStateFlow()
+        override val currentDestinationFlow: StateFlow<ScreenDestination> =
+            this@VoyagerNavigator.currentDestinationFlow.asStateFlow()
 
         override fun lastIndexOf(destination: ScreenDestination): Int =
             navHostController?.items?.indexOfLast { it.destination == destination } ?: -1

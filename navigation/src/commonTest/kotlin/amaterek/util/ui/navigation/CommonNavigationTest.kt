@@ -12,6 +12,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 @Suppress("MagicNumber", "TooManyFunctions")
@@ -43,6 +44,18 @@ abstract class CommonNavigationTest(
         ObjectDestination1.expectLastIndexInBackStack(0)
         ObjectDestination2.expectLastIndexInBackStack(1)
         instanceDestination.expectLastIndexInBackStack(2)
+    }
+
+    @Test
+    fun currentDestinationFlow() = test {
+        expectStartDestination(ObjectDestination1)
+        runNavigator {
+            // The same flow, so collectAsState() doesn't restart on every recomposition
+            assertSame(backStack.currentDestinationFlow, backStack.currentDestinationFlow)
+        }
+
+        expectDestination(ObjectDestination2) { navigateTo(it) }
+        runNavigator { assertEquals(ObjectDestination2, backStack.currentDestinationFlow.value) }
     }
 
     @Test
