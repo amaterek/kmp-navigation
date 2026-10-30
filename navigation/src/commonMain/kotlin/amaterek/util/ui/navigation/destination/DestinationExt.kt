@@ -9,22 +9,23 @@ import androidx.compose.runtime.Stable
  * To observe result use [Navigator.resultFlow] in destination that expects the result.
  */
 @Stable
-fun PreviousDestination.withResult(result: Any) =
-    PreviousDestinationWithResult(result = result)
+fun PreviousDestination.withResult(result: Any): NavigatorDestination =
+    NavigatorDestination.WithResult(destination = this, result = result)
 
 /**
  * Adds result to destination.
  *
  * To observe result use [Navigator.resultFlow] in destination that expects the result.
  */
-@OptIn(InternalNavigation::class)
 @Stable
-fun NavigatorDestination.PopUpTo.withResult(result: Any): NavigatorDestination.PopUpTo = when (this) {
-    is NavigatorDestination.PopUpTo.FirstDestination -> copy(result = result)
-    is NavigatorDestination.PopUpTo.CurrentDestination -> copy(result = result)
-    is NavigatorDestination.PopUpTo.DestinationInstance -> copy(result = result)
-    is NavigatorDestination.PopUpTo.DestinationClass -> copy(result = result)
-}
+fun Destination.withResult(result: Any): NavigatorDestination =
+    NavigatorDestination.WithResult(destination = this, result = result)
+
+val Destination.isPreviousWithResult: Boolean
+    get() = this is NavigatorDestination.WithResult && destination == PreviousDestination
+
+inline fun <reified T> Destination.getResultOrNull() =
+    (this as? NavigatorDestination.WithResult)?.result as? T
 
 /**
  * Replaces current destination with the destination.
@@ -32,7 +33,7 @@ fun NavigatorDestination.PopUpTo.withResult(result: Any): NavigatorDestination.P
 @OptIn(InternalNavigation::class)
 @Stable
 fun ScreenDestination.replace(): NavigatorDestination.PopUpTo =
-    NavigatorDestination.PopUpTo.CurrentDestination(inclusive = true, replaceWith = this, result = null)
+    NavigatorDestination.PopUpTo.CurrentDestination(inclusive = true, replaceWith = this)
 
 /**
  * Replaces whole back stack with the destination.
@@ -40,7 +41,7 @@ fun ScreenDestination.replace(): NavigatorDestination.PopUpTo =
 @OptIn(InternalNavigation::class)
 @Stable
 fun ScreenDestination.replaceAll(): NavigatorDestination.PopUpTo =
-    NavigatorDestination.PopUpTo.FirstDestination(inclusive = true, replaceWith = this, result = null)
+    NavigatorDestination.PopUpTo.FirstDestination(inclusive = true, replaceWith = this)
 
 /**
  * Replaces all back stack with the destination.
@@ -48,7 +49,7 @@ fun ScreenDestination.replaceAll(): NavigatorDestination.PopUpTo =
 @OptIn(InternalNavigation::class)
 @Stable
 fun ScreenDestination.popUpToFirst(): NavigatorDestination.PopUpTo =
-    NavigatorDestination.PopUpTo.FirstDestination(inclusive = false, replaceWith = this, result = null)
+    NavigatorDestination.PopUpTo.FirstDestination(inclusive = false, replaceWith = this)
 
 /**
  * Popups to specific the destination instance and adds the destination to the backstack.
@@ -63,7 +64,6 @@ fun ScreenDestination.popUpTo(
         destination = destination,
         inclusive = inclusive,
         replaceWith = this,
-        result = null,
     )
 
 /**
@@ -79,7 +79,6 @@ fun ScreenDestination.popUpTo(
         destination = destination,
         inclusive = inclusive,
         replaceWith = this,
-        result = null,
     )
 
 /**

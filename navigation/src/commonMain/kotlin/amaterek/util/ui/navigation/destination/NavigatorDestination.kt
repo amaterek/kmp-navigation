@@ -7,25 +7,24 @@ import androidx.compose.runtime.Stable
 @Immutable
 sealed interface NavigatorDestination : Destination {
 
+    data class WithResult(val destination: Destination, val result: Any) : NavigatorDestination
+
     @Immutable
     sealed interface PopUpTo : NavigatorDestination {
 
         val inclusive: Boolean
         val replaceWith: ScreenDestination?
-        val result: Any?
 
         @InternalNavigation
         data class FirstDestination(
             override val inclusive: Boolean,
             override val replaceWith: ScreenDestination?,
-            override val result: Any?,
         ) : PopUpTo
 
         @InternalNavigation
         data class CurrentDestination(
             override val inclusive: Boolean,
             override val replaceWith: ScreenDestination?,
-            override val result: Any?,
         ) : PopUpTo
 
         @InternalNavigation
@@ -33,7 +32,6 @@ sealed interface NavigatorDestination : Destination {
             val destination: ScreenDestination,
             override val inclusive: Boolean,
             override val replaceWith: ScreenDestination?,
-            override val result: Any?,
         ) : PopUpTo
 
         @InternalNavigation
@@ -41,7 +39,6 @@ sealed interface NavigatorDestination : Destination {
             val destination: GraphDestination,
             override val inclusive: Boolean,
             override val replaceWith: ScreenDestination?,
-            override val result: Any?,
         ) : PopUpTo
     }
 
@@ -68,13 +65,11 @@ inline fun PopUpToDestination(
     destination: ScreenDestination,
     inclusive: Boolean = false,
     replaceWith: ScreenDestination? = null,
-    withResult: Any? = null,
 ): NavigatorDestination.PopUpTo =
     NavigatorDestination.PopUpTo.DestinationInstance(
         destination = destination,
         inclusive = inclusive,
         replaceWith = replaceWith,
-        result = withResult,
     )
 
 @OptIn(InternalNavigation::class)
@@ -84,13 +79,11 @@ inline fun PopUpToDestination(
     destination: GraphDestination,
     inclusive: Boolean = false,
     replaceWith: ScreenDestination? = null,
-    withResult: Any? = null,
 ): NavigatorDestination.PopUpTo =
     NavigatorDestination.PopUpTo.DestinationClass(
         destination = destination,
         inclusive = inclusive,
         replaceWith = replaceWith,
-        result = withResult,
     )
 
 @OptIn(InternalNavigation::class)
@@ -98,12 +91,10 @@ inline fun PopUpToDestination(
 @Stable
 inline fun PopUpToFirstDestination(
     replaceWith: ScreenDestination? = null,
-    withResult: Any? = null,
 ): NavigatorDestination.PopUpTo =
     NavigatorDestination.PopUpTo.FirstDestination(
         inclusive = false,
         replaceWith = replaceWith,
-        result = withResult,
     )
 
 @OptIn(InternalNavigation::class)
@@ -115,5 +106,4 @@ inline fun PopUpToCurrentDestination(
     NavigatorDestination.PopUpTo.FirstDestination(
         inclusive = false,
         replaceWith = replaceWith,
-        result = null,
     )

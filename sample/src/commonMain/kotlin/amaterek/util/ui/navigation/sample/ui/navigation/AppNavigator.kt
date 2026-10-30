@@ -6,8 +6,9 @@ import amaterek.util.ui.navigation.destination.Destination
 import amaterek.util.ui.navigation.destination.DialogDestination
 import amaterek.util.ui.navigation.destination.NavigatorDestination
 import amaterek.util.ui.navigation.destination.PreviousDestination
-import amaterek.util.ui.navigation.destination.PreviousDestinationWithResult
 import amaterek.util.ui.navigation.destination.ScreenDestination
+import amaterek.util.ui.navigation.destination.getResultOrNull
+import amaterek.util.ui.navigation.destination.isPreviousWithResult
 import amaterek.util.ui.navigation.sample.ui.navigation.finishappdialog.AppFinishDialogDestination
 import amaterek.util.ui.navigation.sample.ui.navigation.finishappdialog.AppFinishDialogIsCancelable
 import amaterek.util.ui.navigation.sample.ui.navigation.link.AppLinkDestination
@@ -30,14 +31,14 @@ class AppNavigator(
         override fun lastIndexOf(destination: KClass<out ScreenDestination>): Int = -1
     }
 
-    override fun navigateTo(destination: Destination) = when (destination) {
-        is PreviousDestination, is PreviousDestinationWithResult -> {
+    override fun navigateTo(destination: Destination) = when {
+        destination == PreviousDestination || destination.isPreviousWithResult -> {
             when {
                 appDialogState.value != null -> {
                     appDialogState.value = null
                 }
-                destination is PreviousDestinationWithResult -> {
-                    when (val result = destination.result) {
+                destination.isPreviousWithResult -> {
+                    when (val result = destination.getResultOrNull<Any>()) {
                         is AppFinishDialogIsCancelable ->
                             appDialogState.value = AppFinishDialogDestination(result)
                         else -> platformNavigation.finishApp()
@@ -46,8 +47,8 @@ class AppNavigator(
                 else -> platformNavigation.finishApp()
             }
         }
-        is AppLinkDestination -> platformNavigation.openLink(destination.link)
-        is NavigatorDestination.RedirectToParent -> {
+        destination is AppLinkDestination -> platformNavigation.openLink(destination.link)
+        destination is NavigatorDestination.RedirectToParent -> {
             when (val targetDestination = destination.destination) {
                 is AppLinkDestination -> platformNavigation.openLink(targetDestination.link)
                 else -> error("Unsupported destination: $targetDestination")
