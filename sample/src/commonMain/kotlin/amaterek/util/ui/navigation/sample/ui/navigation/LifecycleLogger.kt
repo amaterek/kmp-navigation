@@ -10,7 +10,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 
 @Composable
 fun LifecycleLogger() {
-    val name = LocalDestination.current::class.simpleName
+    val name = LocalDestination.current.toString()
     val lifecycleOwner = LocalLifecycleOwner.current
 
     DisposableEffect(lifecycleOwner) {
