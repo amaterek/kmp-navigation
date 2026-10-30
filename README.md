@@ -169,6 +169,25 @@ fun Content(parentNavigator: Navigator) {
 }
 ```
 
+### Navigation 3 scenes
+
+The Navigation 3 navigator can show several destinations together, e.g. list and detail on wide windows. The graph
+adds Navigation 3 entry metadata to destinations (the other navigators ignore it) and `Nav3NavigationHost` takes the
+scene strategies that read it. Dialogs are shown above any scene and a destination not handled by the strategies is
+shown alone.
+
+```kotlin
+val MyGraph = navigationGraph {
+    screen<ItemListDestination>(metadata = ListDetailSceneStrategy.listPane())
+    screen<ItemDetailDestination>(metadata = ListDetailSceneStrategy.detailPane())
+}
+
+Nav3NavigationHost(
+    navigator = rememberNav3Navigator(ItemListDestination, MyGraph, parent = null),
+    sceneStrategies = listOf(rememberListDetailSceneStrategy<Any>()),
+)
+```
+
 ### Navigation - destination approach
 
 ```kotlin

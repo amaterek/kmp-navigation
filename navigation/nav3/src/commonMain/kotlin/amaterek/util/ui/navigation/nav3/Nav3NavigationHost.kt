@@ -28,6 +28,7 @@ import androidx.navigation3.runtime.metadata
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.scene.DialogSceneStrategy
 import androidx.navigation3.scene.Scene
+import androidx.navigation3.scene.SceneStrategy
 import androidx.navigation3.scene.SinglePaneSceneStrategy
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.NavigationEventInfo
@@ -45,16 +46,20 @@ fun Nav3NavigationHost(
 )
 
 /**
+ * @param sceneStrategies Navigation 3 scene strategies (e.g. `rememberListDetailSceneStrategy()`) deciding from the
+ * metadata of [amaterek.util.ui.navigation.NavigationGraphBuilder.screen] which destinations are shown together.
+ * Dialogs are shown above any scene, a destination not handled by them is shown alone.
  * @param isPredictiveBackEnabled when `false`, a back gesture doesn't show the previous destination while it's in
  * progress (the destination is popped when the gesture completes), e.g. for tabs that aren't a real back stack.
  */
 @Composable
 fun Nav3NavigationHost(
     navigator: Navigator,
+    sceneStrategies: List<SceneStrategy<*>> = emptyList(),
     isPredictiveBackEnabled: Boolean = true,
 ) {
     navigator as Nav3Navigator
-    val sceneStrategies = remember { listOf(DialogSceneStrategy<Nav3Entry>(), SinglePaneSceneStrategy()) }
+    val allSceneStrategies = remember(sceneStrategies) { allSceneStrategies(sceneStrategies) }
     CompositionLocalProvider(LocalNavigator provides navigator) {
         NavDisplay(
             backStack = navigator.entries,
@@ -63,7 +68,7 @@ fun Nav3NavigationHost(
                 rememberSaveableStateHolderNavEntryDecorator(),
                 rememberViewModelStoreNavEntryDecorator(),
             ),
-            sceneStrategies = sceneStrategies,
+            sceneStrategies = allSceneStrategies,
             transitionSpec = {
                 navigator.transitionOf(targetState).enter togetherWith navigator.transitionOf(initialState).exit
             },
@@ -98,13 +103,22 @@ fun rememberNav3Navigator(
     return remember { Nav3Navigator(graph, entries, results, parent, defaultTransition) }
 }
 
+// The strategies only read metadata, so they work with any entry type
+@Suppress("UNCHECKED_CAST")
+private fun allSceneStrategies(sceneStrategies: List<SceneStrategy<*>>): List<SceneStrategy<Nav3Entry>> =
+    listOf(DialogSceneStrategy<Nav3Entry>()) +
+        sceneStrategies.map { it as SceneStrategy<Nav3Entry> } +
+        SinglePaneSceneStrategy()
+
 private fun Nav3Navigator.navEntryOf(entry: Nav3Entry): NavEntry<Nav3Entry> {
-    val dialogProperties = graph.entries[entry.destination::class]?.dialogProperties
-    val metadata = if (dialogProperties != null) {
+    val graphEntry = graph.entries[entry.destination::class]
+    val dialogProperties = graphEntry?.dialogProperties
+    val navigatorMetadata = if (dialogProperties != null) {
         DialogSceneStrategy.dialog(dialogProperties)
     } else {
         metadata { put(ScreenTransitionKey, entry.destination.transition ?: defaultTransition) }
     }
+    val metadata = graphEntry?.metadata.orEmpty() + navigatorMetadata
     return NavEntry(key = entry, contentKey = entry.id, metadata = metadata) { DestinationContent(it) }
 }
 

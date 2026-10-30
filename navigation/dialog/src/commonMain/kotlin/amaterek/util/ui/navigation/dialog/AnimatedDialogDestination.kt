@@ -138,9 +138,12 @@ abstract class AnimatedDialogDestination<RESULT : Any> : ClosingDialogDestinatio
 
 /**
  * Adds the animated dialog destination to the graph with [AnimatedDialogDestination.dialogProperties].
+ *
+ * @param metadata Navigation 3 entry metadata; ignored by the other navigators.
  */
-inline fun <reified T : AnimatedDialogDestination<*>> NavigationGraphBuilder.animatedDialog() =
-    dialog<T>(AnimatedDialogDestination.dialogProperties)
+inline fun <reified T : AnimatedDialogDestination<*>> NavigationGraphBuilder.animatedDialog(
+    metadata: Map<String, Any> = emptyMap(),
+) = dialog<T>(AnimatedDialogDestination.dialogProperties, metadata)
 
 @Composable
 private fun ClosingDialogScope<*>.rememberVisibleState(): MutableTransitionState<Boolean> {

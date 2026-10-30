@@ -45,10 +45,11 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(projects.navigation)
+            // Scene strategies are passed to Nav3NavigationHost
+            api(libs.jetbrains.navigation3.ui)
 
             implementation(libs.compose.runtime)
             implementation(libs.jetbrains.lifecycle.viewmodel.navigation3)
-            implementation(libs.jetbrains.navigation3.ui)
             implementation(libs.jetbrains.navigationevent.compose)
             implementation(libs.kotlinx.serialization.json)
         }

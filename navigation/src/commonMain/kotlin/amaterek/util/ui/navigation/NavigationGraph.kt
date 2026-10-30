@@ -31,6 +31,7 @@ class NavigationGraph internal constructor(
     data class Entry(
         val serializer: KSerializer<out ScreenDestination>,
         val dialogProperties: DialogProperties?,
+        val metadata: Map<String, Any>,
     ) {
         val name: String = serializer.descriptor.serialName
     }
@@ -59,38 +60,55 @@ class NavigationGraphBuilder internal constructor() {
 
     /**
      * Adds the screen destination to the graph.
+     *
+     * @param metadata Navigation 3 entry metadata, e.g. a pane of a scene (`ListDetailSceneStrategy.listPane()`);
+     * ignored by the other navigators.
      */
-    inline fun <reified T : ScreenDestination> screen() = screen(T::class, serializer<T>())
+    inline fun <reified T : ScreenDestination> screen(metadata: Map<String, Any> = emptyMap()) =
+        screen(T::class, serializer<T>(), metadata)
 
     /**
      * Adds the screen destination to the graph when its class is known only at runtime.
      * The class must be annotated with [kotlinx.serialization.Serializable].
      * Dialog destinations must be added with [dialog], otherwise they are displayed as screens.
      */
-    fun screen(destinationClass: GraphDestination) =
-        add(destinationClass, NavigationGraph.Entry(destinationClass.destinationSerializer(), dialogProperties = null))
+    fun screen(destinationClass: GraphDestination, metadata: Map<String, Any> = emptyMap()) = add(
+        destinationClass,
+        NavigationGraph.Entry(destinationClass.destinationSerializer(), dialogProperties = null, metadata),
+    )
 
-    fun <T : ScreenDestination> screen(destinationClass: KClass<T>, serializer: KSerializer<T>) =
-        add(destinationClass, NavigationGraph.Entry(serializer, dialogProperties = null))
+    fun <T : ScreenDestination> screen(
+        destinationClass: KClass<T>,
+        serializer: KSerializer<T>,
+        metadata: Map<String, Any> = emptyMap(),
+    ) = add(destinationClass, NavigationGraph.Entry(serializer, dialogProperties = null, metadata))
 
     /**
      * Adds the dialog destination to the graph.
+     *
+     * @param metadata Navigation 3 entry metadata; ignored by the other navigators.
      */
-    inline fun <reified T : DialogDestination> dialog(properties: DialogProperties = DialogProperties()) =
-        dialog(T::class, serializer<T>(), properties)
+    inline fun <reified T : DialogDestination> dialog(
+        properties: DialogProperties = DialogProperties(),
+        metadata: Map<String, Any> = emptyMap(),
+    ) = dialog(T::class, serializer<T>(), properties, metadata)
 
     /**
      * Adds the dialog destination to the graph when its class is known only at runtime.
      * The class must be annotated with [kotlinx.serialization.Serializable].
      */
-    fun dialog(destinationClass: KClass<out DialogDestination>, properties: DialogProperties = DialogProperties()) =
-        add(destinationClass, NavigationGraph.Entry(destinationClass.destinationSerializer(), properties))
+    fun dialog(
+        destinationClass: KClass<out DialogDestination>,
+        properties: DialogProperties = DialogProperties(),
+        metadata: Map<String, Any> = emptyMap(),
+    ) = add(destinationClass, NavigationGraph.Entry(destinationClass.destinationSerializer(), properties, metadata))
 
     fun <T : DialogDestination> dialog(
         destinationClass: KClass<T>,
         serializer: KSerializer<T>,
         properties: DialogProperties = DialogProperties(),
-    ) = add(destinationClass, NavigationGraph.Entry(serializer, properties))
+        metadata: Map<String, Any> = emptyMap(),
+    ) = add(destinationClass, NavigationGraph.Entry(serializer, properties, metadata))
 
     /**
      * Adds serializers used by destinations, e.g. for properties with interface types.
