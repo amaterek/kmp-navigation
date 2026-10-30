@@ -28,7 +28,6 @@ abstract class BaseNavigator(
 
     private fun doNavigateTo(destination: Destination, result: Any?) {
         when (destination) {
-            NoneDestination -> Unit
             PreviousDestination -> navigateToPreviousDestination(result)
             is NavigatorDestination -> handleNavigatorDestination(destination, result)
             else -> destinationIsNotSupportedError(destination)
@@ -80,6 +79,8 @@ abstract class BaseNavigator(
                 }
             }
         } ?: noParentNavigatorError(destination)
+
+        NoneDestination -> Unit
     }
 
     private fun navigateToPreviousDestination(result: Any?) {

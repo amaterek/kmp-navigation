@@ -22,4 +22,4 @@ data object PreviousDestination : Destination
 /**
  *  Predefined none destination to don't navigate to any destination
  */
-data object NoneDestination : Destination
+data object NoneDestination : NavigatorDestination

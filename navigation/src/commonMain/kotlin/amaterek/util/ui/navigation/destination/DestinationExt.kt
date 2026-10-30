@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package amaterek.util.ui.navigation.destination
 
 import amaterek.util.ui.navigation.annotation.InternalNavigation
@@ -34,6 +36,13 @@ inline fun <reified T> Destination.getResultOrNull() =
 @Stable
 fun ScreenDestination.replace(): NavigatorDestination.PopUpTo =
     NavigatorDestination.PopUpTo.CurrentDestination(inclusive = true, replaceWith = this)
+
+/**
+ * Replaces current destination with the destination, or doesn't navigate when it isn't a [ScreenDestination].
+ */
+@Stable
+fun NavigatorDestination.replaceIfPossible(): NavigatorDestination =
+    (this as? ScreenDestination)?.replace() ?: NoneDestination
 
 /**
  * Replaces whole back stack with the destination.
