@@ -165,6 +165,28 @@ abstract class ClosingDialogDestinationTest(private val host: TestNavigationHost
         expectOnlyScreenAboveStart(TestScreenDestination2)
     }
 
+    @Test
+    fun deliversResultOnceWhenDialogIsOpenedAboveReceiver() = test {
+        openDialog(ResultDialogDestination)
+
+        // The screen receives the result below the next dialog, so it isn't the top destination
+        composeUiTest.runOnUiThread {
+            navigator.navigateBackWithResult(TestDialogResult("result"))
+            navigator.navigateTo(NoResultDialogDestination)
+        }
+        composeUiTest.waitForIdle()
+        composeUiTest.onNodeWithTag(ScreenResultTag).assertTextEquals(TestDialogResult("result").toString())
+
+        composeUiTest.runOnUiThread { navigator.navigateBack() }
+        composeUiTest.runOnUiThread { navigator.navigateTo(TestScreenDestination2) }
+        composeUiTest.waitForIdle()
+        composeUiTest.runOnUiThread { navigator.navigateBack() }
+        composeUiTest.waitForIdle()
+
+        composeUiTest.onNodeWithTag(ScreenNameTag).assertTextEquals(TestScreenDestination1.name)
+        composeUiTest.onNodeWithTag(ScreenResultTag).assertTextEquals("")
+    }
+
     private fun expectOnlyScreenAboveStart(screen: TestScreenDestination) = with(composeUiTest) {
         onNodeWithTag(DialogTag).assertDoesNotExist()
         onNodeWithTag(ScreenNameTag).assertTextEquals(screen.name)

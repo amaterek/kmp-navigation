@@ -123,6 +123,9 @@ abstract class BaseNavigationTest(
         @InternalNavigation
         override fun setResult(result: Any?) = error("Not supported")
 
+        @InternalNavigation
+        override fun clearResult(navigationResultHandler: Any) = error("Not supported")
+
         fun reset() {
             lastDestination = null
         }

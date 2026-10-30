@@ -119,6 +119,10 @@ class JetpackNavigator(
         resultFlowOf(currentBackStackEntry).value = result
     }
 
+    override fun clearResult(navigationResultHandler: Any) {
+        resultFlowOf(navigationResultHandler as NavBackStackEntry).value = null
+    }
+
     override fun doNavigateBack() {
         navHostController.popBackStack()
     }

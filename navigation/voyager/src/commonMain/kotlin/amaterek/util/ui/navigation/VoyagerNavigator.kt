@@ -111,6 +111,10 @@ class VoyagerNavigator internal constructor(
         currentBackStackEntry.result.value = result
     }
 
+    override fun clearResult(navigationResultHandler: Any) {
+        (navigationResultHandler as VoyagerBackStackEntry).result.value = null
+    }
+
     override fun doNavigateBack() {
         doIfNavControllerAvailableOrThrow { pop() }
     }

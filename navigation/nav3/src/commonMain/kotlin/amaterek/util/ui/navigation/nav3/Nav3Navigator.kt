@@ -79,6 +79,10 @@ class Nav3Navigator internal constructor(
         if (result == null) results.remove(entryId) else results[entryId] = result
     }
 
+    override fun clearResult(navigationResultHandler: Any) {
+        results.remove(navigationResultHandler as String)
+    }
+
     override fun doNavigateBack() = updateBackStack {
         removeAt(lastIndex)
     }

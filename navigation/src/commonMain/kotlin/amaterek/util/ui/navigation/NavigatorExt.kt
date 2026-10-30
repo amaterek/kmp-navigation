@@ -100,9 +100,12 @@ inline val Navigator.currentDestinationFlow: StateFlow<ScreenDestination>
 @OptIn(InternalNavigation::class)
 inline val Navigator.resultFlow: Flow<Any>
     @Composable
-    get() = getResultFlow(LocalNavigationResultHandler.current)
-        .filterNotNull()
-        .onEach { setResult(null) }
+    get() {
+        val navigationResultHandler = LocalNavigationResultHandler.current
+        return getResultFlow(navigationResultHandler)
+            .filterNotNull()
+            .onEach { clearResult(navigationResultHandler) }
+    }
 
 @Composable
 @NonRestartableComposable

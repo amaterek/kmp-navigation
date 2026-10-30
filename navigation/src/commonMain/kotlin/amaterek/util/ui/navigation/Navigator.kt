@@ -35,4 +35,11 @@ interface Navigator {
 
     @InternalNavigation
     fun setResult(result: Any?)
+
+    /**
+     * Clears the delivered result of the destination of [navigationResultHandler], which isn't necessarily the top
+     * destination, e.g. below a dialog.
+     */
+    @InternalNavigation
+    fun clearResult(navigationResultHandler: Any)
 }

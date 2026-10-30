@@ -60,6 +60,8 @@ internal class AppNavigator(
     override fun getResultFlow(navigationResultHandler: Any): Flow<Any?> = notSupported()
 
     override fun setResult(result: Any?) = notSupported()
+
+    override fun clearResult(navigationResultHandler: Any) = notSupported()
 }
 
 private fun notSupported(): Nothing = error("Not supported")

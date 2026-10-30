@@ -98,6 +98,10 @@ class TestBaseNavigator(
         requireMockError()
     }
 
+    override fun clearResult(navigationResultHandler: Any) {
+        requireMockError()
+    }
+
     public override fun doNavigateBack() {
         requireMockError()
     }
