@@ -74,15 +74,23 @@ kotlin {
             implementation(libs.jetbrains.navigationevent.compose)
         }
 
-        getByName("androidDeviceTest").dependencies {
+        commonTest.dependencies {
             implementation(projects.navigation.jetpack)
             implementation(projects.navigation.voyager)
+            implementation(libs.compose.ui.test)
+            implementation(libs.kotlin.test)
+        }
+
+        jvmTest.dependencies {
+            implementation(rootProject.extra["composeDesktopCurrentOs"] as String)
+        }
+
+        getByName("androidDeviceTest").dependencies {
             implementation(libs.androidx.compose.ui.test.junit4)
             implementation(libs.androidx.compose.ui.test.manifest)
             implementation(libs.androidx.test.junit)
             implementation(libs.androidx.test.runner)
             implementation(libs.junit)
-            implementation(libs.kotlin.test)
         }
     }
 }

@@ -11,28 +11,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.test.ComposeUiTest
+import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
-import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
-import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.compose.ui.test.v2.runComposeUiTest
 import kotlinx.serialization.Serializable
-import org.junit.Rule
-import org.junit.Test
-import org.junit.runner.RunWith
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@RunWith(AndroidJUnit4::class)
 class JetpackClosingDialogDestinationTest : ClosingDialogDestinationTest(JetpackTestNavigationHost)
 
-@RunWith(AndroidJUnit4::class)
 class VoyagerClosingDialogDestinationTest : ClosingDialogDestinationTest(VoyagerTestNavigationHost)
 
+@OptIn(ExperimentalTestApi::class)
 @Suppress("TooManyFunctions")
 abstract class ClosingDialogDestinationTest(private val host: TestNavigationHost) {
 
-    @get:Rule
-    val composeTestRule = createComposeRule()
+    private lateinit var composeUiTest: ComposeUiTest
 
     private lateinit var navigator: Navigator
 
@@ -80,7 +77,7 @@ abstract class ClosingDialogDestinationTest(private val host: TestNavigationHost
     fun ignoresClosedWhenNotClosing() = test {
         openDialog(ResultDialogDestination)
 
-        composeTestRule.runOnUiThread { dialogScope.onClosed() }
+        composeUiTest.runOnUiThread { dialogScope.onClosed() }
 
         expectOpenDialog(isClosing = false)
     }
@@ -89,15 +86,16 @@ abstract class ClosingDialogDestinationTest(private val host: TestNavigationHost
     fun delegatesOtherNavigation() = test {
         openDialog(ResultDialogDestination)
 
-        composeTestRule.runOnUiThread { dialogNavigator.navigateTo(TestScreenDestination2) }
+        composeUiTest.runOnUiThread { dialogNavigator.navigateTo(TestScreenDestination2) }
 
-        composeTestRule.waitForIdle()
-        composeTestRule.onNodeWithTag(ScreenNameTag).assertTextEquals(TestScreenDestination2.name)
+        composeUiTest.waitForIdle()
+        composeUiTest.onNodeWithTag(ScreenNameTag).assertTextEquals(TestScreenDestination2.name)
         assertEquals(navigator.backStack.size - 1, navigator.backStack.lastIndexOf(TestScreenDestination2))
     }
 
-    private fun test(block: () -> Unit) {
-        composeTestRule.setContent {
+    private fun test(block: () -> Unit) = runComposeUiTest {
+        composeUiTest = this
+        setContent {
             navigator = host.rememberNavigator(
                 TestScreenDestination1,
                 navigationGraph {
@@ -113,16 +111,16 @@ abstract class ClosingDialogDestinationTest(private val host: TestNavigationHost
     }
 
     private fun openDialog(destination: ScreenDestination) {
-        composeTestRule.runOnUiThread { navigator.navigateTo(destination) }
+        composeUiTest.runOnUiThread { navigator.navigateTo(destination) }
         expectOpenDialog(isClosing = false)
     }
 
     private fun startClosing(action: () -> Unit) {
-        composeTestRule.runOnUiThread(action)
+        composeUiTest.runOnUiThread(action)
         expectOpenDialog(isClosing = true)
     }
 
-    private fun expectOpenDialog(isClosing: Boolean) = with(composeTestRule) {
+    private fun expectOpenDialog(isClosing: Boolean) = with(composeUiTest) {
         waitForIdle()
         onNodeWithTag(DialogTag)
             .assertIsDisplayed()
@@ -130,7 +128,7 @@ abstract class ClosingDialogDestinationTest(private val host: TestNavigationHost
         onNodeWithTag(ScreenResultTag).assertTextEquals("")
     }
 
-    private fun expectClosedDialog(result: TestDialogResult?) = with(composeTestRule) {
+    private fun expectClosedDialog(result: TestDialogResult?) = with(composeUiTest) {
         runOnUiThread { dialogScope.onClosed() }
         waitForIdle()
         onNodeWithTag(DialogTag).assertDoesNotExist()
