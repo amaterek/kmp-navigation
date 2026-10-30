@@ -37,6 +37,10 @@ inline fun <reified T> Destination.getResultOrNull() =
 fun ScreenDestination.replace(): NavigatorDestination.PopUpTo =
     NavigatorDestination.PopUpTo.CurrentDestination(inclusive = true, replaceWith = this)
 
+@Suppress("FunctionName")
+fun ReplaceCurrent(destination: ScreenDestination): NavigatorDestination.PopUpTo =
+    destination.replace()
+
 /**
  * Replaces current destination with the destination, or doesn't navigate when it isn't a [ScreenDestination].
  */
@@ -51,6 +55,10 @@ fun NavigatorDestination.replaceIfPossible(): NavigatorDestination =
 @Stable
 fun ScreenDestination.replaceAll(): NavigatorDestination.PopUpTo =
     NavigatorDestination.PopUpTo.FirstDestination(inclusive = true, replaceWith = this)
+
+@Suppress("FunctionName")
+fun ReplaceBackstack(destination: ScreenDestination): NavigatorDestination.PopUpTo =
+    destination.replaceAll()
 
 /**
  * Replaces all back stack with the destination.
