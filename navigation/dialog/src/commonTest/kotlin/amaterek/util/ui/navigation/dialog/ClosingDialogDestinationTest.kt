@@ -23,6 +23,8 @@ import kotlin.test.assertEquals
 
 class JetpackClosingDialogDestinationTest : ClosingDialogDestinationTest(JetpackTestNavigationHost)
 
+class Nav3ClosingDialogDestinationTest : ClosingDialogDestinationTest(Nav3TestNavigationHost)
+
 class VoyagerClosingDialogDestinationTest : ClosingDialogDestinationTest(VoyagerTestNavigationHost)
 
 @OptIn(ExperimentalTestApi::class)

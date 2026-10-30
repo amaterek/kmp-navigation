@@ -28,6 +28,9 @@ import org.junit.runner.RunWith
 class JetpackAnimatedDialogDestinationTest : AnimatedDialogDestinationTest(JetpackTestNavigationHost)
 
 @RunWith(AndroidJUnit4::class)
+class Nav3AnimatedDialogDestinationTest : AnimatedDialogDestinationTest(Nav3TestNavigationHost)
+
+@RunWith(AndroidJUnit4::class)
 class VoyagerAnimatedDialogDestinationTest : AnimatedDialogDestinationTest(VoyagerTestNavigationHost)
 
 @Suppress("TooManyFunctions")

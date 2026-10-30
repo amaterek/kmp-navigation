@@ -28,6 +28,7 @@ includeBuild("../kmp-log") {
 include(":navigation")
 include(":navigation:dialog")
 include(":navigation:jetpack")
+include(":navigation:nav3")
 include(":navigation:voyager")
 include(":sample")
 include(":sample:androidApp")

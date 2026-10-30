@@ -7,6 +7,8 @@ import amaterek.util.ui.navigation.VoyagerNavigationHost
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.jetpack.JetpackNavigationHost
 import amaterek.util.ui.navigation.jetpack.rememberJetpackNavigator
+import amaterek.util.ui.navigation.nav3.Nav3NavigationHost
+import amaterek.util.ui.navigation.nav3.rememberNav3Navigator
 import amaterek.util.ui.navigation.rememberVoyagerNavigator
 import amaterek.util.ui.navigation.resultFlow
 import amaterek.util.ui.navigation.transition.NoneScreenTransition
@@ -36,6 +38,13 @@ val JetpackTestNavigationHost = TestNavigationHost(
         rememberJetpackNavigator(startDestination, graph, parent = null, NoneScreenTransition)
     },
     navigationHost = { JetpackNavigationHost(it) },
+)
+
+val Nav3TestNavigationHost = TestNavigationHost(
+    rememberNavigator = { startDestination, graph ->
+        rememberNav3Navigator(startDestination, graph, parent = null, NoneScreenTransition)
+    },
+    navigationHost = { Nav3NavigationHost(it) },
 )
 
 val VoyagerTestNavigationHost = TestNavigationHost(

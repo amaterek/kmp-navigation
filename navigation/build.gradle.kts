@@ -66,6 +66,7 @@ kotlin {
 
         commonTest.dependencies {
             implementation(projects.navigation.jetpack)
+            implementation(projects.navigation.nav3)
             implementation(projects.navigation.voyager)
             implementation(libs.compose.material3)
             implementation(libs.compose.ui.test)

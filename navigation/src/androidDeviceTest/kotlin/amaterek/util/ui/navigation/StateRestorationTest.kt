@@ -8,6 +8,8 @@ import amaterek.util.ui.navigation.common.TestDestination
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.jetpack.JetpackNavigationHost
 import amaterek.util.ui.navigation.jetpack.rememberJetpackNavigator
+import amaterek.util.ui.navigation.nav3.Nav3NavigationHost
+import amaterek.util.ui.navigation.nav3.rememberNav3Navigator
 import amaterek.util.ui.navigation.transition.NoneScreenTransition
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.MaterialTheme
@@ -33,6 +35,13 @@ class JetpackStateRestorationTest : StateRestorationTest(
         rememberJetpackNavigator(startDestination, graph, parent = null, NoneScreenTransition)
     },
     navigationHost = { JetpackNavigationHost(it) },
+)
+
+class Nav3StateRestorationTest : StateRestorationTest(
+    rememberNavigator = { startDestination, graph ->
+        rememberNav3Navigator(startDestination, graph, parent = null, NoneScreenTransition)
+    },
+    navigationHost = { Nav3NavigationHost(it) },
 )
 
 class VoyagerStateRestorationTest : StateRestorationTest(

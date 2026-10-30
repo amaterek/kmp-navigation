@@ -11,6 +11,8 @@ import amaterek.util.ui.navigation.destination.Destination
 import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.jetpack.JetpackNavigationHost
 import amaterek.util.ui.navigation.jetpack.JetpackNavigator
+import amaterek.util.ui.navigation.nav3.Nav3NavigationHost
+import amaterek.util.ui.navigation.nav3.Nav3Navigator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.ComposeUiTest
@@ -98,6 +100,7 @@ abstract class BaseNavigationTest(
             )
             when (val navigator = navigator) {
                 is JetpackNavigator -> JetpackNavigationHost(navigator)
+                is Nav3Navigator -> Nav3NavigationHost(navigator)
                 is VoyagerNavigator -> VoyagerNavigationHost(navigator)
                 else -> error("Unknown navigator")
             }

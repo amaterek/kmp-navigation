@@ -30,6 +30,9 @@ dependencies {
     // For Jetpack (Navigation 2) implementation
     implementation 'com.github.amaterek.kmp-navigation:jetpack:{version}'
 
+    // For Navigation 3 implementation
+    implementation 'com.github.amaterek.kmp-navigation:nav3:{version}'
+
     // For Voyager implementation
     implementation 'com.github.amaterek.kmp-navigation:voyager:{version}'
 
@@ -40,7 +43,7 @@ dependencies {
 
 ## Principles
 
-- Multiplatform (supports Voyager and Jetpack navigators)
+- Multiplatform (supports Voyager, Jetpack and Navigation 3 navigators with the same API)
 - One navigation method `Navigator.navigateTo(destination)` to allow ViewModel/Presenter to decide
   how to navigate.
 - Destinations a navigator can navigate to are defined by its graph (`navigationGraph { ... }`).
@@ -131,6 +134,22 @@ fun Content(parentNavigator: Navigator) {
         defaultTransition = FadeScreenTransition,
     )
     JetpackNavigationHost(jetpackNavigator)
+
+    // or
+    Nav3NavigationHost(
+        startDestination = MyDestination,
+        graph = MyGraph,
+        parent = parentNavigator,
+        defaultTransition = FadeScreenTransition,
+    )
+    // or
+    val nav3Navigator = rememberNav3Navigator(
+        startDestination = MyDestination,
+        graph = MyGraph,
+        parent = parentNavigator,
+        defaultTransition = FadeScreenTransition,
+    )
+    Nav3NavigationHost(nav3Navigator)
 
     // or
     VoyagerNavigationHost(
@@ -249,7 +268,8 @@ fun Content() {
 Navigation hosts handle system back (Android back button or gesture, iOS back swipe, Escape on desktop) with
 [navigation event](https://developer.android.com/guide/navigation/navigation-event/handle-back): they navigate to
 `PreviousDestination` while the navigator can go back, otherwise the back is handled by the parent host or the platform.
-`JetpackNavigationHost(navigator, isPredictiveBackEnabled = false)` pops only when the back gesture completes, without
+`JetpackNavigationHost(navigator, isPredictiveBackEnabled = false)` and
+`Nav3NavigationHost(navigator, isPredictiveBackEnabled = false)` pop only when the back gesture completes, without
 showing the previous destination during it (e.g. for tabs that aren't a real back stack). The Voyager host always does
 that, as Voyager has no predictive back animation.
 
