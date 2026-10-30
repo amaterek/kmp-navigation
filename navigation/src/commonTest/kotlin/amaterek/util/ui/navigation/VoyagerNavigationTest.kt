@@ -1,3 +1,6 @@
+// Tested until the deprecated Voyager navigator is removed
+@file:Suppress("DEPRECATION")
+
 package amaterek.util.ui.navigation
 
 import amaterek.util.ui.navigation.common.ObjectDestination1

@@ -38,6 +38,7 @@ class Nav3ScreenStateTest : ScreenStateTest(
     navigationHost = { Nav3NavigationHost(it) },
 )
 
+@Suppress("DEPRECATION")
 class VoyagerScreenStateTest : ScreenStateTest(
     rememberNavigator = { startDestination, graph ->
         rememberVoyagerNavigator(startDestination, graph, parent = null, NoneScreenTransition)

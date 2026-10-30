@@ -86,6 +86,7 @@ abstract class BaseNavigationTest(
     }
 
     @OptIn(InternalNavigation::class)
+    @Suppress("DEPRECATION")
     @Composable
     private fun TestContent(startDestination: ScreenDestination) {
         MaterialTheme {

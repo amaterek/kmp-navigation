@@ -43,7 +43,7 @@ private fun ChooseNavigatorView(
             modifier = Modifier.fillMaxWidth(),
             onClick = { onNavigatorChosen(ChosenNavigator.Voyager) },
         ) {
-            Text("Voyager Navigator")
+            Text("Voyager Navigator (deprecated)")
         }
         Button(
             modifier = Modifier.fillMaxWidth(),

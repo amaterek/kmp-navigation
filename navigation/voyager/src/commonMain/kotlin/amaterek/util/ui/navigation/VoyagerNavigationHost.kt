@@ -37,6 +37,14 @@ import cafe.adriel.voyager.core.stack.StackEvent
 import cafe.adriel.voyager.navigator.NavigatorDisposeBehavior
 import cafe.adriel.voyager.navigator.Navigator as VNavigator
 
+// Jetpack navigation and Navigation 3 are multiplatform now, and Voyager's own features aren't available through
+// the navigator anyway
+private const val VoyagerDeprecationMessage =
+    "The Voyager navigator will be removed. Use the Jetpack (JetpackNavigationHost) or Navigation 3 " +
+        "(Nav3NavigationHost) navigator, the destinations and the navigation don't change."
+
+@Deprecated(VoyagerDeprecationMessage)
+@Suppress("DEPRECATION")
 @NonRestartableComposable
 @Composable
 fun VoyagerNavigationHost(
@@ -48,6 +56,14 @@ fun VoyagerNavigationHost(
     navigator = rememberVoyagerNavigator(startBackStack, graph, parent, defaultTransition),
 )
 
+@Deprecated(
+    VoyagerDeprecationMessage,
+    ReplaceWith(
+        "JetpackNavigationHost(startDestination, graph, parent, defaultTransition)",
+        "amaterek.util.ui.navigation.jetpack.JetpackNavigationHost",
+    ),
+)
+@Suppress("DEPRECATION")
 @NonRestartableComposable
 @Composable
 fun VoyagerNavigationHost(
@@ -59,6 +75,7 @@ fun VoyagerNavigationHost(
     navigator = rememberVoyagerNavigator(listOf(startDestination), graph, parent, defaultTransition),
 )
 
+@Deprecated(VoyagerDeprecationMessage)
 @OptIn(InternalNavigation::class, InternalVoyagerApi::class)
 @Composable
 fun VoyagerNavigationHost(
@@ -141,6 +158,13 @@ private fun DialogItems(
     }
 }
 
+@Deprecated(
+    VoyagerDeprecationMessage,
+    ReplaceWith(
+        "rememberJetpackNavigator(startDestination, graph, parent, defaultTransition)",
+        "amaterek.util.ui.navigation.jetpack.rememberJetpackNavigator",
+    ),
+)
 @OptIn(InternalNavigation::class)
 @NonRestartableComposable
 @Composable
@@ -151,6 +175,7 @@ fun rememberVoyagerNavigator(
     defaultTransition: ScreenTransition = FadeScreenTransition,
 ): Navigator = remember { VoyagerNavigator(listOf(startDestination), graph, parent, defaultTransition) }
 
+@Deprecated(VoyagerDeprecationMessage)
 @OptIn(InternalNavigation::class)
 @NonRestartableComposable
 @Composable

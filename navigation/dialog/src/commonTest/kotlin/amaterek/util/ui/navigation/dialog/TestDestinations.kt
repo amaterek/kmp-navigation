@@ -51,6 +51,8 @@ val Nav3TestNavigationHost = TestNavigationHost(
     navigationHost = { Nav3NavigationHost(it) },
 )
 
+// Tested until the deprecated Voyager navigator is removed
+@Suppress("DEPRECATION")
 val VoyagerTestNavigationHost = TestNavigationHost(
     rememberNavigator = { startDestination, graph ->
         rememberVoyagerNavigator(startDestination, graph, parent = null, NoneScreenTransition)

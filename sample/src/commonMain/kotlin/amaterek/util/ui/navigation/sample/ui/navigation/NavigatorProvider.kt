@@ -30,6 +30,7 @@ internal interface NavigatorProvider {
     ): Navigator
 }
 
+@Suppress("DEPRECATION")
 internal class GetVoyagerNavigationHost : NavigatorProvider {
 
     @Composable

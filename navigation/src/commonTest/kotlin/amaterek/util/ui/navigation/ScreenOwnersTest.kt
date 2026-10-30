@@ -46,6 +46,7 @@ class Nav3ScreenOwnersTest : ScreenOwnersTest(
     isLifecycleOfHiddenScreenKept = false,
 )
 
+@Suppress("DEPRECATION")
 class VoyagerScreenOwnersTest : ScreenOwnersTest(
     rememberNavigator = { startDestination, graph ->
         rememberVoyagerNavigator(startDestination, graph, parent = null, NoneScreenTransition)

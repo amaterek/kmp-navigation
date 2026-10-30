@@ -33,7 +33,7 @@ dependencies {
     // For Navigation 3 implementation
     implementation 'com.github.amaterek.kmp-navigation:nav3:{version}'
 
-    // For Voyager implementation
+    // For Voyager implementation (deprecated, will be removed)
     implementation 'com.github.amaterek.kmp-navigation:voyager:{version}'
 
     // For animated dialogs
@@ -43,7 +43,7 @@ dependencies {
 
 ## Principles
 
-- Multiplatform (supports Voyager, Jetpack and Navigation 3 navigators with the same API)
+- Multiplatform (supports Jetpack and Navigation 3 navigators with the same API, and the deprecated Voyager navigator)
 - One navigation method `Navigator.navigateTo(destination)` to allow ViewModel/Presenter to decide
   how to navigate.
 - Destinations a navigator can navigate to are defined by its graph (`navigationGraph { ... }`).
@@ -150,24 +150,12 @@ fun Content(parentNavigator: Navigator) {
         defaultTransition = FadeScreenTransition,
     )
     Nav3NavigationHost(nav3Navigator)
-
-    // or
-    VoyagerNavigationHost(
-        startDestination = MyDestination, // or listOf(MyDestination, ...),
-        graph = MyGraph,
-        parent = parentNavigator,
-        defaultTransition = FadeScreenTransition,
-    )
-    // or
-    val voyagerNavigator = rememberVoyagerNavigator(
-        startDestination = MyDestination, // or listOf(MyDestination, ...),
-        graph = MyGraph,
-        parent = parentNavigator,
-        defaultTransition = FadeScreenTransition,
-    )
-    VoyagerNavigationHost(voyagerNavigator)
 }
 ```
+
+The Voyager navigator (`VoyagerNavigationHost`, `rememberVoyagerNavigator`) is deprecated and will be removed: Jetpack
+navigation and Navigation 3 are multiplatform now. Replacing it with `JetpackNavigationHost` or `Nav3NavigationHost`
+doesn't change the destinations or the navigation.
 
 ### Navigation 3 scenes
 

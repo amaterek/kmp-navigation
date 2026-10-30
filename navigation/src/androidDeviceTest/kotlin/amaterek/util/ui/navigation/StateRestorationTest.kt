@@ -44,6 +44,7 @@ class Nav3StateRestorationTest : StateRestorationTest(
     navigationHost = { Nav3NavigationHost(it) },
 )
 
+@Suppress("DEPRECATION")
 class VoyagerStateRestorationTest : StateRestorationTest(
     rememberNavigator = { startDestination, graph ->
         rememberVoyagerNavigator(startDestination, graph, parent = null, NoneScreenTransition)
