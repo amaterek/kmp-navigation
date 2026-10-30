@@ -2,12 +2,12 @@
 
 # Kotlin multiplatform navigation library
 
-Kotlin version: 1.9.22
+Kotlin 2.4.20, Compose Multiplatform 1.12.1
 
 ## Supported platforms
 
 * Android
-* JVM
+* JVM (desktop)
 * iOS // Not supported by jitpack.io
 
 ## Setup
@@ -27,7 +27,7 @@ Then add this to your dependencies
 dependencies {
     implementation 'com.github.amaterek.kmp-navigation:navigation:{version}'
 
-    // For Jetpack implementation
+    // For Jetpack implementation (Android only)
     implementation 'com.github.amaterek.kmp-navigation:jetpack:{version}'
 
     // For Voyager implementation
@@ -37,11 +37,12 @@ dependencies {
 
 ## Principles
 
-- Multiplatform (supports Voyager and JetPack navigators)
+- Multiplatform (supports Voyager and Jetpack navigators)
 - One navigation method `Navigator.navigateTo(destination)` to allow ViewModel/Presenter to decide
   how to navigate.
-- Allowed redirects to parent navigator wit strategy (`IfNotInCurrentGraph`, `Deep`).
-- Operators on `Destination` like `replace`, `replaceAll`, `popUpTo`, `withRrsult`
+- Destinations a navigator can navigate to are defined by its graph (`navigationGraph { ... }`).
+- Allowed redirects to parent navigator with strategy (`IfNotInCurrentGraph`, `Deep`).
+- Operators on `Destination` like `replace`, `replaceAll`, `replaceIfPossible`, `popUpTo`, `withResult`
   and `redirectToParent`.
 - Extensions for `Navigator`
   like `navigateBack`, `navigateBackWithResult`, `replace`, `replaceAll`, `popUpTo` etc...
@@ -52,7 +53,6 @@ dependencies {
 
 ```kotlin
 // Destination without argument
-@Serialize
 data object MyDestination : ScreenDestination {
 
     @Composable
@@ -61,29 +61,20 @@ data object MyDestination : ScreenDestination {
     }
 }
 
-// Destination with argument
-@Serialize
-data class MyDestinationWithArg(val argument: String) : ScreenDestination,
-    ScreenTransitionProvider {
+// Destination with argument, all its properties must be serializable
+data class MyDestinationWithArg(val argument: String) : ScreenDestination {
 
-    // Optionally override default screen transition
+    // Optionally override default screen transition, with a getter so it isn't serialized
     override val transition: ScreenTransition
-        get() = Companion.transition
+        get() = SlideHorizontallyScreenTransition
 
     @Composable
     override fun Content() {
         // ...
     }
-
-    // Optionally override default screen transition
-    // NOTE: This is required for JetPackNavigator
-    companion object : ScreenTransitionProvider {
-        override val transition: ScreenTransition = SlideHorizontallyScreenTransition
-    }
 }
 
 // Dialog destination
-@Serialize
 data object MyDialogDestination : DialogDestination {
 
     @Composable
@@ -98,21 +89,34 @@ data object MyDialogDestination : DialogDestination {
 }
 ```
 
+### Defining graph
+
+```kotlin
+val MyGraph = navigationGraph {
+    screen<MyDestination>()
+    screen<MyDestinationWithArg>()
+    // Dialogs must be added with dialog(), which takes their dialog properties
+    dialog<MyDialogDestination>(properties = DialogProperties(dismissOnClickOutside = false))
+    // Adds the destinations of another graph
+    include(FeatureGraph)
+}
+```
+
 ### Create Navigator
 
 ```kotlin
 @Composable
 fun Content(parentNavigator: Navigator) {
     JetpackNavigationHost(
-        startDestination = StartDestination,
-        graph = setOf(StartDestination::class, /* ... */),
+        startDestination = MyDestination,
+        graph = MyGraph,
         parent = parentNavigator,
         defaultTransition = FadeScreenTransition,
     )
     // or
     val jetpackNavigator = rememberJetpackNavigator(
-        startDestination = StartDestination,
-        graph = setOf(StartDestination::class, /* ... */),
+        startDestination = MyDestination,
+        graph = MyGraph,
         parent = parentNavigator,
         defaultTransition = FadeScreenTransition,
     )
@@ -120,15 +124,15 @@ fun Content(parentNavigator: Navigator) {
 
     // or
     VoyagerNavigationHost(
-        startDestination = StartDestination, // or listOf(StartDestination, ...),
-        graph = setOf(StartDestination::class, /* ... */),
+        startDestination = MyDestination, // or listOf(MyDestination, ...),
+        graph = MyGraph,
         parent = parentNavigator,
         defaultTransition = FadeScreenTransition,
     )
     // or
     val voyagerNavigator = rememberVoyagerNavigator(
-        startDestination = StartDestination, // or listOf(StartDestination, ...),
-        graph = setOf(StartDestination::class, /* ... */),
+        startDestination = MyDestination, // or listOf(MyDestination, ...),
+        graph = MyGraph,
         parent = parentNavigator,
         defaultTransition = FadeScreenTransition,
     )
@@ -144,31 +148,34 @@ fun Content() {
     val navigator = LocalNavigator.current
 
     with(navigator) {
-        navgateTo(MyDestination)
-        // Back stack is: 
+        navigateTo(MyDestination)
+        // Back stack is:
         //   MyDestination
 
-        navgateTo(MyDestinationWithArg("Argument 1").replace())
-        // Back stack is: 
+        navigateTo(MyDestinationWithArg("Argument 1").replace())
+        // Back stack is:
         //   MyDestinationWithArg("Argument 1")
 
-        navgateTo(MyDestinationWithArg("Argument 2"))
-        // Back stack is: 
-        //   MyDestinationWithArg("Argument 1") 
+        navigateTo(MyDestinationWithArg("Argument 2"))
+        // Back stack is:
+        //   MyDestinationWithArg("Argument 1")
         //   MyDestinationWithArg("Argument 2")
 
-        navgateTo(PopUpToDestination(MyDestinationWithArg("Argument 1")).withResult("Result"))
+        navigateTo(PopUpToDestination(MyDestinationWithArg("Argument 1")).withResult("Result"))
         // Back stack is:
-        //   MyDestinationWithArg("Argument 1") and LocalNavigationResultFlow.current emits "Result"
+        //   MyDestinationWithArg("Argument 1") and its Navigator.resultFlow emits "Result"
 
-        navgateTo(ParentDestination.redirectToParent(deep = 2))
+        navigateTo(ParentDestination.redirectToParent(deep = 2))
         // Redirects ParentDestination to parent's parent
 
-        navgateTo(ParentDestination.redirectToParentIfNotInGraph())
+        navigateTo(ParentDestination.redirectToParentIfNotInGraph())
         // Redirects ParentDestination to parent only if ParentDestination isn't in current navigator graph
 
-        navgateTo(PreviousDestination)
+        navigateTo(PreviousDestination)
         // Redirects PreviousDestination to parent
+
+        navigateTo(NoneDestination)
+        // Doesn't navigate, e.g. for a destination that may not be needed
 
         // ETC ...
     }
@@ -183,22 +190,22 @@ fun Content() {
     val navigator = LocalNavigator.current
 
     with(navigator) {
-        navgateTo(MyDestination)
-        // Back stack is: 
+        navigateTo(MyDestination)
+        // Back stack is:
         //   MyDestination
 
         replace(MyDestinationWithArg("Argument 1"))
-        // Back stack is: 
+        // Back stack is:
         //   MyDestinationWithArg("Argument 1")
 
-        navgateTo(MyDestinationWithArg("Argument 2"))
-        // Back stack is: 
-        //   MyDestinationWithArg("Argument 1") 
+        navigateTo(MyDestinationWithArg("Argument 2"))
+        // Back stack is:
+        //   MyDestinationWithArg("Argument 1")
         //   MyDestinationWithArg("Argument 2")
 
         popUpToWithResult(MyDestinationWithArg("Argument 1"), result = "Result")
         // Back stack is:
-        //   MyDestinationWithArg("Argument 1") and Navigator.resultFlow emits "Result"
+        //   MyDestinationWithArg("Argument 1") and its Navigator.resultFlow emits "Result"
 
         navigateBack()
         // Redirects PreviousDestination to parent
@@ -208,27 +215,33 @@ fun Content() {
 }
 ```
 
-### Handling results from other destinations (in  the same backstack)
+### Handling results from other destinations (in the same back stack)
+
+When a destination navigates with `PreviousDestination` or `PopUpTo` with `withResult(...)`, the result is
+delivered once to the destination it navigates to.
+
+```kotlin
+@Composable
+fun Content() {
+    ObserveNavigationResult { result ->
+        // Handle the result by type
+        when (result) {
+            is MyDialogDestination.Result -> handleResultFromMyDialogDestination(result)
+            else -> Unit
+        }
+    }
+    // or collect LocalNavigator.current.resultFlow
+}
+```
+
+### Handling back
 
 ```kotlin
 @Composable
 fun Content() {
     val navigator = LocalNavigator.current
-    val navigationResultFlow by LocalNavigationResultFlow.current
 
-    LaunchedEffect(navigator) {
-        // When destination used PreviousDestination or PopUpTo with operator 'withResult(...)'
-        // the result will be emitted by the flow if this destination i at the to of the backstack.
-        navigationResultFlow
-            .onEach {
-                // Handle the result by type
-                when (it) {
-                    is MyDialogDestination.Result -> handleResultFromMyDialogDestination(it)
-                    else -> Unit
-                }
-            }
-            .launchIn(this)
-    }
+    BackHandler { navigator.navigateBack() }
 }
 ```
 
