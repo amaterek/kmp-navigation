@@ -8,7 +8,6 @@ import amaterek.util.ui.navigation.destination.ScreenDestination
 import amaterek.util.ui.navigation.internal.NavigationDialog
 import amaterek.util.ui.navigation.transition.FadeScreenTransition
 import amaterek.util.ui.navigation.transition.ScreenTransition
-import amaterek.util.ui.navigation.transition.ScreenTransitionProvider
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.togetherWith
@@ -127,10 +126,10 @@ private fun ScreenItem(vNavigator: VNavigator, screen: VoyagerBackStackEntry, de
         transitionSpec = {
             val item = targetState
             val lastItem = initialState
-            val transition = (item.destination as? ScreenTransitionProvider)?.transition ?: defaultTransition
+            val transition = item.destination.transition ?: defaultTransition
             val isPop = vNavigator.lastEvent == StackEvent.Pop
             val lastTransition = if (item != lastItem) {
-                (lastItem.destination as? ScreenTransitionProvider)?.transition ?: defaultTransition
+                lastItem.destination.transition ?: defaultTransition
             } else null
             // Behaviour compatible with JetPack navigation
             val (enterTransition, exitTransition) = if (isPop) {

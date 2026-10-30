@@ -37,6 +37,11 @@ class JetpackNavigator(
 
     private val screenDestinationsMap = mutableMapOf<String, ScreenDestination>()
 
+    internal fun transitionOf(
+        navBackStackEntry: NavBackStackEntry,
+        destinationClass: KClass<out ScreenDestination>,
+    ): ScreenTransition = getDestination(navBackStackEntry, destinationClass).transition ?: defaultTransition
+
     internal fun getDestination(navBackStackEntry: NavBackStackEntry, destinationClass: KClass<out ScreenDestination>): ScreenDestination {
         var destination = screenDestinationsMap[navBackStackEntry.id]
         if (destination == null) {

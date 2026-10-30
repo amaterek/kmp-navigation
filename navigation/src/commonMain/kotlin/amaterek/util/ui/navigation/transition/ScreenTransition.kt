@@ -22,11 +22,6 @@ data class ScreenTransition(
     val popExit: ExitTransition,
 )
 
-interface ScreenTransitionProvider {
-
-    val transition: ScreenTransition
-}
-
 private const val TransitionDurationMillis = 300
 
 private val fadeAnimationSpec = tween<Float>(durationMillis = TransitionDurationMillis)
